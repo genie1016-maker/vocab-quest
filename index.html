@@ -977,6 +977,8 @@
     let speechRecognition = null;
     let isListening = false;
     let currentVoiceContext = 'speaking'; // 'speaking' | 'choice' | 'spelling'
+    let userStoppedMic = false;
+    let spellingRestartTimer = null;
     // 拼字語音即時寫入控制（避免等待 isFinal 過久或重複輸入）
     let spellingCommittedLetters = {};
     let spellingInterimTimer = null;
@@ -991,34 +993,36 @@
       'neighbor': ['neighbour'],
       'quarter': ['1/4']
     };
-    // 英文字母發音同音字對照表（擴充常見辨識字詞，大幅提升語音唸字母辨識率）
-    const SPOKEN_LETTER_MAP = {
-      'a': 'a', 'ay': 'a', 'eh': 'a', 'hey': 'a',
-      'b': 'b', 'be': 'b', 'bee': 'b',
-      'c': 'c', 'see': 'c', 'sea': 'c', 'si': 'c',
-      'd': 'd', 'dee': 'd', 'di': 'd',
-      'e': 'e', 'ee': 'e',
-      'f': 'f', 'ef': 'f', 'eff': 'f', 'if': 'f',
-      'g': 'g', 'gee': 'g', 'ji': 'g',
-      'h': 'h', 'aitch': 'h', 'ache': 'h', 'age': 'h', 'each': 'h', 'edge': 'h',
-      'i': 'i', 'eye': 'i', 'aye': 'i',
-      'j': 'j', 'jay': 'j',
-      'k': 'k', 'kay': 'k', 'okay': 'k', 'ok': 'k',
-      'l': 'l', 'el': 'l', 'ell': 'l', 'al': 'l',
-      'm': 'm', 'em': 'm', 'am': 'm',
-      'n': 'n', 'en': 'n', 'in': 'n', 'an': 'n',
-      'o': 'o', 'oh': 'o', 'owe': 'o', '0': 'o',
-      'p': 'p', 'pea': 'p', 'pee': 'p', 'pi': 'p',
-      'q': 'q', 'cue': 'q', 'queue': 'q', 'kew': 'q',
-      'r': 'r', 'are': 'r', 'ar': 'r', 'our': 'r',
-      's': 's', 'es': 's', 'ess': 's', 'as': 's', 'is': 's',
-      't': 't', 'tea': 't', 'tee': 't', 'ti': 't',
-      'u': 'u', 'you': 'u', 'yew': 'u',
-      'v': 'v', 'vee': 'v', 'vi': 'v',
-      'w': 'w', 'doubleu': 'w', 'doubleyou': 'w',
-      'x': 'x', 'ex': 'x', 'axe': 'x',
-      'y': 'y', 'why': 'y', 'wye': 'y',
-      'z': 'z', 'zee': 'z', 'zed': 'z', 'zi': 'z'
+
+    // 智慧英文字母多候選發音對照表（針對手機/瀏覽器語音引擎常把單字母聽成常見單字的情況）
+    // 每個辨識字詞對應多個可能字母，系統會結合「目前剩餘的字母方塊」自動選出最準確的字母
+    const SPOKEN_LETTER_CANDIDATES = {
+      'a': ['a'], 'ay': ['a'], 'eh': ['a'], 'hey': ['a', 'k', 'j'], 'eight': ['h', 'a'], 'ate': ['h', 'a'],
+      'b': ['b'], 'be': ['b', 'p', 'v'], 'bee': ['b', 'p', 'v'], 'beat': ['b'], 'big': ['b'],
+      'c': ['c'], 'see': ['c', 'z', 's'], 'sea': ['c', 'z', 's'], 'si': ['c'], 'she': ['c', 'g', 'z'], 'say': ['c'],
+      'd': ['d'], 'dee': ['d', 't'], 'di': ['d'], 'the': ['d', 't', 'z'], 'day': ['d', 'j'], 'did': ['d'],
+      'e': ['e'], 'ee': ['e'], 'he': ['e', 'p', 't'], 'eat': ['e'], 'year': ['e'],
+      'f': ['f'], 'ef': ['f'], 'eff': ['f'], 'if': ['f'], 'of': ['f'], 'off': ['f'], 'half': ['f'], 'app': ['f'],
+      'g': ['g'], 'gee': ['g'], 'ji': ['g'], 'jeep': ['g'], 'gene': ['g'],
+      'h': ['h'], 'aitch': ['h'], 'ache': ['h'], 'age': ['h'], 'each': ['h'], 'edge': ['h'], 'itch': ['h'], 'page': ['h'], 'hatch': ['h'],
+      'i': ['i'], 'eye': ['i'], 'aye': ['i'], 'hi': ['i', 'y'], 'high': ['i', 'y'], 'my': ['i', 'y', 'm'], 'by': ['i', 'y'],
+      'j': ['j'], 'jay': ['j'], 'jane': ['j'], 'jade': ['j'],
+      'k': ['k'], 'kay': ['k'], 'okay': ['k'], 'ok': ['k'], 'cake': ['k'], 'key': ['k', 't', 'p'],
+      'l': ['l'], 'el': ['l'], 'ell': ['l'], 'al': ['l'], 'all': ['l', 'o'], 'oil': ['l'], 'ill': ['l'], 'hell': ['l'], 'well': ['l'], 'out': ['l'], 'bell': ['l'],
+      'm': ['m'], 'em': ['m'], 'am': ['m'], 'im': ['m'], 'him': ['m'], 'um': ['m'], 'mm': ['m'], 'and': ['n', 'm'],
+      'n': ['n'], 'en': ['n'], 'in': ['n'], 'an': ['n'], 'end': ['n'], 'on': ['n', 'o'], 'ten': ['n'], 'hen': ['n'],
+      'o': ['o'], 'oh': ['o'], 'owe': ['o'], '0': ['o', 'z'], 'or': ['o', 'r'], 'old': ['o'], 'go': ['o', 'g'], 'no': ['o', 'n'],
+      'p': ['p'], 'pea': ['p', 'b'], 'pee': ['p', 'b'], 'pi': ['p'], 'peace': ['p'], 'please': ['p'],
+      'q': ['q'], 'cue': ['q'], 'queue': ['q'], 'kew': ['q'], 'cute': ['q'], 'kill': ['q'], 'cool': ['q'],
+      'r': ['r'], 'are': ['r'], 'ar': ['r'], 'our': ['r'], 'art': ['r'], 'car': ['r'], 'ah': ['r'], 'hour': ['r'],
+      's': ['s'], 'es': ['s'], 'ess': ['s'], 'as': ['s'], 'is': ['s', 'e'], 'us': ['s'], 'yes': ['s'], 'ask': ['s', 'x'], 'ace': ['s'], 'ice': ['s'], 'its': ['s'],
+      't': ['t'], 'tea': ['t', 'd'], 'tee': ['t', 'd'], 'ti': ['t'], 'to': ['t', 'u'], 'two': ['t', 'u', 'q'], 'team': ['t'],
+      'u': ['u'], 'you': ['u', 'q'], 'yew': ['u'], 'your': ['u'], 'use': ['u'], 'new': ['u'], 'do': ['u', 'd'], 'who': ['u'],
+      'v': ['v'], 'vee': ['v', 'b'], 'vi': ['v'], 'we': ['v', 'e'], 've': ['v'], 'fee': ['v'], 'free': ['v'], 'three': ['v', 'c', 'z'], 'me': ['v', 'b', 'e'],
+      'w': ['w'], 'doubleu': ['w'], 'doubleyou': ['w'], 'dub': ['w'], 'ww': ['w'],
+      'x': ['x'], 'ex': ['x'], 'axe': ['x'], 'ax': ['x'], 'eggs': ['x'], 'acts': ['x'], 'next': ['x'], 'six': ['x'],
+      'y': ['y'], 'why': ['y'], 'wye': ['y'], 'white': ['y'], 'wide': ['y'], 'buy': ['y'], 'right': ['y'],
+      'z': ['z'], 'zee': ['z', 'c'], 'zed': ['z'], 'zi': ['z'], 'easy': ['z'], 'zero': ['z', 'o']
     };
 
     // 單字表 Modal 狀態
@@ -1028,7 +1032,7 @@
     let isMuted = false;
     let speechRate = 1.0;
     let audioCtx = null;
-    let audioSuspendTimer = null;
+    let audioCloseTimer = null;
     let speakTimer = null;
     let currentUtterance = null;
 
@@ -1115,25 +1119,30 @@
     🔊 3. Web Speech API (語音朗讀)
     =================================================================
     */
-    // 立即休眠 Web Audio 音效引擎，避免瀏覽器/手機系統壓低語音朗讀音量 (Audio Ducking)
-    function suspendAudioContextNow() {
-      if (audioSuspendTimer) {
-        clearTimeout(audioSuspendTimer);
-        audioSuspendTimer = null;
+    // 徹底關閉 Web Audio 音效引擎，強制手機/瀏覽器釋放音訊焦點，避免 TTS 語音被系統壓小聲 (Audio Ducking)
+    function closeAudioContextNow() {
+      if (audioCloseTimer) {
+        clearTimeout(audioCloseTimer);
+        audioCloseTimer = null;
       }
-      if (audioCtx && audioCtx.state === 'running') {
-        audioCtx.suspend().catch(() => {});
+      if (audioCtx) {
+        const ctxToClose = audioCtx;
+        audioCtx = null;
+        try {
+          if (ctxToClose.state !== 'closed') {
+            return ctxToClose.close().catch(() => {});
+          }
+        } catch (e) {}
       }
+      return Promise.resolve();
     }
 
-    // 音效播畢後自動休眠 AudioContext，釋放系統音訊通道
-    function scheduleAudioSuspend(delayMs = 450) {
-      if (audioSuspendTimer) clearTimeout(audioSuspendTimer);
-      audioSuspendTimer = setTimeout(() => {
-        if (audioCtx && audioCtx.state === 'running') {
-          audioCtx.suspend().catch(() => {});
-        }
-        audioSuspendTimer = null;
+    // 音效播畢後自動關閉 AudioContext，避免殘留音訊通道導致下一題朗讀變小聲
+    function scheduleAudioClose(delayMs = 450) {
+      if (audioCloseTimer) clearTimeout(audioCloseTimer);
+      audioCloseTimer = setTimeout(() => {
+        audioCloseTimer = null;
+        closeAudioContextNow();
       }, delayMs);
     }
 
@@ -1145,30 +1154,37 @@
         speakTimer = null;
       }
 
-      // 朗讀前先停止上一句並釋放 Web Audio 通道，避免音量被系統壓小
+      const hadActiveAudio = !!audioCtx;
+      // 朗讀前先停止上一句並徹底關閉 Web Audio，確保系統將音量完全還給語音朗讀
       window.speechSynthesis.cancel();
-      suspendAudioContextNow();
+      const closePromise = closeAudioContextNow();
 
-      speakTimer = setTimeout(() => {
-        try {
-          if (window.speechSynthesis.paused) {
-            window.speechSynthesis.resume();
-          }
+      const startSpeaking = () => {
+        // 若剛關閉過 Web Audio，多留一點緩衝讓手機系統恢復正常媒體音量
+        const delay = hadActiveAudio ? 200 : 80;
+        speakTimer = setTimeout(() => {
+          try {
+            if (window.speechSynthesis.paused) {
+              window.speechSynthesis.resume();
+            }
 
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = lang;
-          utterance.rate = speechRate;
-          utterance.volume = 1.0;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.rate = speechRate;
+            utterance.volume = 1.0;
 
-          const voices = window.speechSynthesis.getVoices();
-          const preferred = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
-          if (preferred) utterance.voice = preferred;
+            const voices = window.speechSynthesis.getVoices();
+            const preferred = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
+            if (preferred) utterance.voice = preferred;
 
-          // 保留參考避免部分瀏覽器中途回收物件
-          currentUtterance = utterance;
-          window.speechSynthesis.speak(utterance);
-        } catch (e) {}
-      }, 90);
+            // 保留參考避免部分瀏覽器中途回收物件
+            currentUtterance = utterance;
+            window.speechSynthesis.speak(utterance);
+          } catch (e) {}
+        }, delay);
+      };
+
+      closePromise.then(startSpeaking);
     }
 
     function speakCurrentWord() {
@@ -1194,11 +1210,11 @@
     =================================================================
     */
     function getAudioContext() {
-      if (audioSuspendTimer) {
-        clearTimeout(audioSuspendTimer);
-        audioSuspendTimer = null;
+      if (audioCloseTimer) {
+        clearTimeout(audioCloseTimer);
+        audioCloseTimer = null;
       }
-      if (!audioCtx) {
+      if (!audioCtx || audioCtx.state === 'closed') {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
       if (audioCtx.state === 'suspended') {
@@ -1220,6 +1236,8 @@
 
     function playSound(type, comboCount = 0) {
       if (isMuted) return;
+      // 麥克風正在收音時不播放倒數滴答聲，避免干擾語音辨識或壓低系統音量
+      if (type === 'tick' && isListening) return;
       try {
         const ctx = getAudioContext();
         if (!ctx) return;
@@ -1233,7 +1251,7 @@
           osc.frequency.setValueAtTime(baseFreq, now);
           osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.18);
 
-          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.setValueAtTime(0.22, now);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
 
           osc.connect(gain);
@@ -1248,7 +1266,7 @@
           osc.frequency.setValueAtTime(240, now);
           osc.frequency.exponentialRampToValueAtTime(130, now + 0.25);
 
-          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.setValueAtTime(0.24, now);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
 
           osc.connect(gain);
@@ -1263,7 +1281,7 @@
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(freq, now + idx * 0.09);
 
-            gain.gain.setValueAtTime(0.2, now + idx * 0.09);
+            gain.gain.setValueAtTime(0.18, now + idx * 0.09);
             gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.09 + 0.28);
 
             osc.connect(gain);
@@ -1276,7 +1294,7 @@
           const gain = ctx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(650, now);
-          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.setValueAtTime(0.07, now);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
 
           osc.connect(gain);
@@ -1284,22 +1302,22 @@
           osc.start(now);
           osc.stop(now + 0.04);
         } else if (type === 'tick') {
-          // 最後 5 秒倒數提示音效 (使用柔和三角波與適中音量，避免觸發系統壓低後續語音音量)
+          // 最後 5 秒倒數提示音效（柔和音量）
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'triangle';
           const freq = comboCount <= 2 ? 960 : 760;
           osc.frequency.setValueAtTime(freq, now);
-          gain.gain.setValueAtTime(0.075, now);
-          gain.gain.exponentialRampToValueAtTime(0.005, now + 0.09);
+          gain.gain.setValueAtTime(0.065, now);
+          gain.gain.exponentialRampToValueAtTime(0.005, now + 0.08);
 
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(now);
-          osc.stop(now + 0.09);
+          osc.stop(now + 0.08);
         } else if (type === 'boom') {
-          // 時間到小爆炸趣味音效 (平衡峰值音量，避免觸發手機/瀏覽器自動音量限制器)
-          const bufferSize = ctx.sampleRate * 0.45;
+          // 時間到小爆炸趣味音效（平衡峰值音量）
+          const bufferSize = ctx.sampleRate * 0.42;
           const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
           const data = buffer.getChannelData(0);
           for (let i = 0; i < bufferSize; i++) {
@@ -1311,11 +1329,11 @@
           const filter = ctx.createBiquadFilter();
           filter.type = 'lowpass';
           filter.frequency.setValueAtTime(900, now);
-          filter.frequency.exponentialRampToValueAtTime(120, now + 0.4);
+          filter.frequency.exponentialRampToValueAtTime(120, now + 0.38);
 
           const noiseGain = ctx.createGain();
-          noiseGain.gain.setValueAtTime(0.22, now);
-          noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+          noiseGain.gain.setValueAtTime(0.18, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.42);
 
           noise.connect(filter);
           filter.connect(noiseGain);
@@ -1326,19 +1344,19 @@
           const subGain = ctx.createGain();
           subOsc.type = 'sawtooth';
           subOsc.frequency.setValueAtTime(150, now);
-          subOsc.frequency.exponentialRampToValueAtTime(38, now + 0.35);
-          subGain.gain.setValueAtTime(0.16, now);
-          subGain.gain.exponentialRampToValueAtTime(0.01, now + 0.38);
+          subOsc.frequency.exponentialRampToValueAtTime(38, now + 0.32);
+          subGain.gain.setValueAtTime(0.14, now);
+          subGain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
 
           subOsc.connect(subGain);
           subGain.connect(ctx.destination);
           subOsc.start(now);
-          subOsc.stop(now + 0.38);
+          subOsc.stop(now + 0.35);
         }
 
-        // 音效播放結束後自動休眠 AudioContext，避免持續佔用音訊通道導致 TTS 變小聲
-        const suspendDelay = (type === 'boom' || type === 'victory') ? 600 : 350;
-        scheduleAudioSuspend(suspendDelay);
+        // 音效播放完畢後立即排程關閉 AudioContext，徹底釋放硬體音訊通道
+        const closeDelay = (type === 'boom' || type === 'victory') ? 520 : (type === 'tick' ? 180 : 300);
+        scheduleAudioClose(closeDelay);
       } catch (e) {}
     }
 
@@ -2030,6 +2048,21 @@
 
       const popped = spellingUserLetters.pop();
       popped.used = false;
+      spellingCommittedLetters = {};
+      pendingSpellingInterim = null;
+
+      renderSpellingSlots();
+      renderSpellingTiles();
+    }
+
+    function clearSpelling() {
+      if (isAnswered || spellingUserLetters.length === 0) return;
+      playSound('click');
+
+      spellingUserLetters.forEach(tile => tile.used = false);
+      spellingUserLetters = [];
+      spellingCommittedLetters = {};
+      pendingSpellingInterim = null;
 
       renderSpellingSlots();
       renderSpellingTiles();
@@ -2166,7 +2199,21 @@
       return true;
     }
 
-    // 將語音辨識結果解析為英文字母陣列（支援單唸字母、同音字、連唸合併成字、以及 "double p" 唸法）
+    // 依目前可用的字母方塊與下一個目標位置，從多個同音候選字母中選出最佳字母
+    function pickBestCandidateLetter(candidates, availableCounts, expectedChar) {
+      if (!candidates || candidates.length === 0) return null;
+      // 1. 若候選字母中有剛好符合「下一個目標字母」且方塊可用，優先選擇
+      if (expectedChar && candidates.includes(expectedChar) && availableCounts[expectedChar] > 0) {
+        return expectedChar;
+      }
+      // 2. 否則挑選第一個目前方塊中仍可用的候選字母
+      const availableMatch = candidates.find(ch => availableCounts[ch] > 0);
+      if (availableMatch) return availableMatch;
+      // 3. 若都不在方塊中，回傳預設第一候選
+      return candidates[0];
+    }
+
+    // 將語音辨識結果解析為英文字母陣列（支援單唸字母、多候選同音字、連唸合併成字、以及 "double p" 唸法）
     function parseSpokenLetters(rawText, extraAvailable = []) {
       const text = rawText.toLowerCase()
         .replace(/[-.,!?;:'"]/g, ' ')
@@ -2174,27 +2221,62 @@
         .trim();
       if (!text) return [];
 
+      // 建立可用字母計數表，讓多候選同音字能智慧配對
+      const tempAvailable = {};
+      currentTileObjects.forEach(t => {
+        if (!t.used) tempAvailable[t.char] = (tempAvailable[t.char] || 0) + 1;
+      });
+      extraAvailable.forEach(ch => {
+        tempAvailable[ch] = (tempAvailable[ch] || 0) + 1;
+      });
+
       const tokens = text.split(/\s+/);
       const letters = [];
+      let slotCursor = Math.max(0, spellingUserLetters.length - extraAvailable.length);
 
       for (let i = 0; i < tokens.length; i++) {
         const tok = tokens[i];
+        const expectedChar = spellingTargetWord[slotCursor] || null;
+
         // 支援 "double + 字母"（例如拼 apple 時唸 double p）
         if (tok === 'double' && i + 1 < tokens.length) {
-          const nextLetter = SPOKEN_LETTER_MAP[tokens[i + 1]];
-          if (nextLetter) {
-            letters.push(nextLetter, nextLetter);
+          const nextCandidates = SPOKEN_LETTER_CANDIDATES[tokens[i + 1]];
+          const chosen = pickBestCandidateLetter(nextCandidates, tempAvailable, expectedChar);
+          if (chosen) {
+            letters.push(chosen, chosen);
+            if (tempAvailable[chosen]) tempAvailable[chosen] = Math.max(0, tempAvailable[chosen] - 2);
+            slotCursor += 2;
             i++;
             continue;
           }
         }
-        // 1. 優先比對單字母與常見同音字
-        if (SPOKEN_LETTER_MAP[tok]) {
-          letters.push(SPOKEN_LETTER_MAP[tok]);
+
+        // 1. 若語音辨識將連唸的字母自動合併成整串英文（例如快速唸 G-H-O-S-T 被辨識成 "ghost" 或 "pp"）
+        if (/^[a-z]{2,}$/.test(tok) && (tok === spellingTargetWord || canFormFromAvailableTiles(tok, extraAvailable)) && !SPOKEN_LETTER_CANDIDATES[tok]) {
+          for (const ch of tok) {
+            letters.push(ch);
+            if (tempAvailable[ch]) tempAvailable[ch]--;
+            slotCursor++;
+          }
+          continue;
         }
-        // 2. 若語音辨識將連唸的字母自動合併成整串英文（不限字數，例如 "apple"、"ghost"、"pp"）
+
+        // 2. 比對單字母與多候選同音字表
+        if (SPOKEN_LETTER_CANDIDATES[tok]) {
+          const chosen = pickBestCandidateLetter(SPOKEN_LETTER_CANDIDATES[tok], tempAvailable, expectedChar);
+          if (chosen) {
+            letters.push(chosen);
+            if (tempAvailable[chosen]) tempAvailable[chosen]--;
+            slotCursor++;
+          }
+        }
+        // 3. 若是完整拼寫出的目標單字（即使部分字也在同音表內，例如 "if"、"on" 等短單字）
         else if (/^[a-z]{2,}$/.test(tok) && (tok === spellingTargetWord || canFormFromAvailableTiles(tok, extraAvailable))) {
-          letters.push(...tok.split(''));
+          for (const ch of tok) {
+            letters.push(ch);
+            if (tempAvailable[ch]) tempAvailable[ch]--;
+            slotCursor++;
+          }
         }
       }
       return letters;
@@ -2217,13 +2299,12 @@
         : [];
 
       let bestNewLetters = [];
-      let bestFullLetters = [];
       let bestScore = -1;
 
       const expectedStartIdx = spellingUserLetters.length;
 
-      // 從多個候選辨識結果中挑選最符合目前可用字母方塊的一組
-      transcripts.forEach(raw => {
+      // 從多個候選辨識結果（最多 10 組）中挑選最符合目前可用字母方塊的一組
+      transcripts.forEach((raw, altIdx) => {
         const parsed = parseSpokenLetters(raw, alreadyCommitted);
         if (parsed.length === 0) return;
 
@@ -2247,19 +2328,22 @@
         let scoreVal = 0;
         newPart.forEach((ch, offset) => {
           if (availableCount[ch] > 0) {
-            scoreVal += 10;
-            // 若剛好符合目標單字的下一個字母，給予額外加分（解決同音字歧義）
+            scoreVal += 12;
+            // 若剛好符合目標單字的下一個字母，給予高額加分（大幅提升單字母精準度）
             if (spellingTargetWord[expectedStartIdx + offset] === ch) {
-              scoreVal += 5;
+              scoreVal += 10;
             }
             availableCount[ch]--;
+          } else {
+            scoreVal -= 4;
           }
         });
+        // 靠前的辨識順位給予微幅加分
+        scoreVal += Math.max(0, 3 - altIdx * 0.3);
 
         if (scoreVal > bestScore) {
           bestScore = scoreVal;
           bestNewLetters = newPart;
-          bestFullLetters = parsed;
         }
       });
 
@@ -2310,6 +2394,7 @@
       }
 
       if (isListening) {
+        userStoppedMic = true;
         // 若使用者手動停止收音時，還有剛唸完尚未送出的暫存字母，先幫他填入
         if (currentVoiceContext === 'spelling' && pendingSpellingInterim) {
           const { index, transcripts } = pendingSpellingInterim;
@@ -2321,27 +2406,41 @@
         return;
       }
 
+      userStoppedMic = false;
       currentVoiceContext = context;
+      startVoiceRecognitionSession(context);
+    }
+
+    // 啟動單次或續連語音辨識（聽音拼字在手機上若被瀏覽器自動中斷，會自動無縫重連）
+    function startVoiceRecognitionSession(context) {
+      if (isAnswered || userStoppedMic) return;
+
       spellingCommittedLetters = {};
       pendingSpellingInterim = null;
       clearSpellingInterimTimer();
+      if (spellingRestartTimer) {
+        clearTimeout(spellingRestartTimer);
+        spellingRestartTimer = null;
+      }
 
-      // 啟動收音前先停止朗讀，避免麥克風收到系統聲音
+      // 啟動收音前先停止朗讀並關閉音效，避免麥克風收到系統聲音
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      closeAudioContextNow();
 
       try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         speechRecognition = new SpeechRecognition();
         speechRecognition.lang = 'en-US';
         speechRecognition.interimResults = true;
-        speechRecognition.maxAlternatives = 5;
+        // 提高候選數至 10，大幅提高單唸英文字母的命中率
+        speechRecognition.maxAlternatives = 10;
         // 聽音拼字支援連續收音，方便孩子一個字母一個字母慢慢唸
         speechRecognition.continuous = (context === 'spelling');
 
         speechRecognition.onstart = () => {
           isListening = true;
           const startMsg = context === 'spelling'
-            ? '🔴 正在聆聽字母... 請依序唸出英文字母（例如 A、P、P、L、E）'
+            ? '🔴 正在聆聽字母... 請唸出英文字母（可一個一個慢慢唸）'
             : '🔴 正在聆聽中... 請大聲唸出英文單字！';
           updateVoiceUI(true, startMsg);
         };
@@ -2364,7 +2463,7 @@
                 applySpokenSpellingLetters(transcripts, i);
               } else {
                 if (hint) hint.textContent = `聆聽中：「${transcripts[0] || ''}」...`;
-                // 暫存即時結果：若手機/瀏覽器停頓 0.75 秒還沒觸發 isFinal，自動幫玩家填入答案格！
+                // 縮短即時停頓寫入時間至 0.32 秒，唸完字母立刻自動跳進答案格！
                 pendingSpellingInterim = { index: i, transcripts };
                 clearSpellingInterimTimer();
                 spellingInterimTimer = setTimeout(() => {
@@ -2373,7 +2472,7 @@
                     pendingSpellingInterim = null;
                     applySpokenSpellingLetters(pending.transcripts, pending.index);
                   }
-                }, 750);
+                }, 320);
               }
             }
             return;
@@ -2434,6 +2533,11 @@
         speechRecognition.onerror = (event) => {
           isListening = false;
           clearSpellingInterimTimer();
+          // 聽音拼字模式下，若只是短暫沒聲音 (no-speech) 且尚未答完，交由 onend 自動續聽
+          if (currentVoiceContext === 'spelling' && event.error === 'no-speech' && !isAnswered && !userStoppedMic) {
+            return;
+          }
+          userStoppedMic = true;
           let errMsg = '語音辨識發生錯誤，請再試一次';
           if (event.error === 'not-allowed') {
             errMsg = '請允許瀏覽器使用麥克風權限才能語音答題喔！';
@@ -2454,6 +2558,17 @@
             applySpokenSpellingLetters(pending.transcripts, pending.index);
           }
           isListening = false;
+
+          // 手機瀏覽器在拼字模式常會唸完一兩個字就自動結束收音，這裡自動無縫重啟，不用一直重按麥克風
+          if (currentVoiceContext === 'spelling' && !isAnswered && !userStoppedMic) {
+            spellingRestartTimer = setTimeout(() => {
+              if (!isAnswered && !userStoppedMic && currentVoiceContext === 'spelling') {
+                startVoiceRecognitionSession('spelling');
+              }
+            }, 150);
+            return;
+          }
+
           if (!isAnswered) {
             updateVoiceUI(false);
           }
@@ -2462,14 +2577,20 @@
         speechRecognition.start();
       } catch (e) {
         isListening = false;
+        userStoppedMic = true;
         updateVoiceUI(false, '無法啟動麥克風，請確認權限設定。');
       }
     }
 
     function stopVoiceRecognition() {
+      userStoppedMic = true;
       isListening = false;
       clearSpellingInterimTimer();
       pendingSpellingInterim = null;
+      if (spellingRestartTimer) {
+        clearTimeout(spellingRestartTimer);
+        spellingRestartTimer = null;
+      }
       if (speechRecognition) {
         try {
           speechRecognition.onresult = null;
@@ -2605,7 +2726,7 @@
           : `😅 再接再厲！正確答案是：<strong class="text-rose-700">${vocabItem.word}</strong>`;
         feedbackDetail.textContent = `中文意思是：「${vocabItem.zh}」`;
 
-        setTimeout(() => speak(vocabItem.word), isTimeout ? 600 : 400);
+        setTimeout(() => speak(vocabItem.word), isTimeout ? 800 : 450);
       }
 
       updateComboUI();
