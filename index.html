@@ -1028,6 +1028,9 @@
     let isMuted = false;
     let speechRate = 1.0;
     let audioCtx = null;
+    let audioSuspendTimer = null;
+    let speakTimer = null;
+    let currentUtterance = null;
 
     // 頁面初次載入
     window.onload = function() {
@@ -1112,19 +1115,60 @@
     🔊 3. Web Speech API (語音朗讀)
     =================================================================
     */
+    // 立即休眠 Web Audio 音效引擎，避免瀏覽器/手機系統壓低語音朗讀音量 (Audio Ducking)
+    function suspendAudioContextNow() {
+      if (audioSuspendTimer) {
+        clearTimeout(audioSuspendTimer);
+        audioSuspendTimer = null;
+      }
+      if (audioCtx && audioCtx.state === 'running') {
+        audioCtx.suspend().catch(() => {});
+      }
+    }
+
+    // 音效播畢後自動休眠 AudioContext，釋放系統音訊通道
+    function scheduleAudioSuspend(delayMs = 450) {
+      if (audioSuspendTimer) clearTimeout(audioSuspendTimer);
+      audioSuspendTimer = setTimeout(() => {
+        if (audioCtx && audioCtx.state === 'running') {
+          audioCtx.suspend().catch(() => {});
+        }
+        audioSuspendTimer = null;
+      }, delayMs);
+    }
+
     function speak(text, lang = 'en-US') {
       if (!('speechSynthesis' in window)) return;
+
+      if (speakTimer) {
+        clearTimeout(speakTimer);
+        speakTimer = null;
+      }
+
+      // 朗讀前先停止上一句並釋放 Web Audio 通道，避免音量被系統壓小
       window.speechSynthesis.cancel();
+      suspendAudioContextNow();
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.rate = speechRate;
+      speakTimer = setTimeout(() => {
+        try {
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
 
-      const voices = window.speechSynthesis.getVoices();
-      const preferred = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
-      if (preferred) utterance.voice = preferred;
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = lang;
+          utterance.rate = speechRate;
+          utterance.volume = 1.0;
 
-      window.speechSynthesis.speak(utterance);
+          const voices = window.speechSynthesis.getVoices();
+          const preferred = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
+          if (preferred) utterance.voice = preferred;
+
+          // 保留參考避免部分瀏覽器中途回收物件
+          currentUtterance = utterance;
+          window.speechSynthesis.speak(utterance);
+        } catch (e) {}
+      }, 90);
     }
 
     function speakCurrentWord() {
@@ -1150,11 +1194,15 @@
     =================================================================
     */
     function getAudioContext() {
+      if (audioSuspendTimer) {
+        clearTimeout(audioSuspendTimer);
+        audioSuspendTimer = null;
+      }
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
       if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+        audioCtx.resume().catch(() => {});
       }
       return audioCtx;
     }
@@ -1236,13 +1284,13 @@
           osc.start(now);
           osc.stop(now + 0.04);
         } else if (type === 'tick') {
-          // 最後 5 秒倒數提示音效 (秒數越少音高略高，增加緊張感)
+          // 最後 5 秒倒數提示音效 (使用柔和三角波與適中音量，避免觸發系統壓低後續語音音量)
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
-          osc.type = 'square';
-          const freq = comboCount <= 2 ? 980 : 780;
+          osc.type = 'triangle';
+          const freq = comboCount <= 2 ? 960 : 760;
           osc.frequency.setValueAtTime(freq, now);
-          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.setValueAtTime(0.075, now);
           gain.gain.exponentialRampToValueAtTime(0.005, now + 0.09);
 
           osc.connect(gain);
@@ -1250,7 +1298,7 @@
           osc.start(now);
           osc.stop(now + 0.09);
         } else if (type === 'boom') {
-          // 時間到小爆炸趣味音效 (白噪音 + 低頻衝擊波)
+          // 時間到小爆炸趣味音效 (平衡峰值音量，避免觸發手機/瀏覽器自動音量限制器)
           const bufferSize = ctx.sampleRate * 0.45;
           const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
           const data = buffer.getChannelData(0);
@@ -1266,7 +1314,7 @@
           filter.frequency.exponentialRampToValueAtTime(120, now + 0.4);
 
           const noiseGain = ctx.createGain();
-          noiseGain.gain.setValueAtTime(0.38, now);
+          noiseGain.gain.setValueAtTime(0.22, now);
           noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
 
           noise.connect(filter);
@@ -1279,7 +1327,7 @@
           subOsc.type = 'sawtooth';
           subOsc.frequency.setValueAtTime(150, now);
           subOsc.frequency.exponentialRampToValueAtTime(38, now + 0.35);
-          subGain.gain.setValueAtTime(0.3, now);
+          subGain.gain.setValueAtTime(0.16, now);
           subGain.gain.exponentialRampToValueAtTime(0.01, now + 0.38);
 
           subOsc.connect(subGain);
@@ -1287,6 +1335,10 @@
           subOsc.start(now);
           subOsc.stop(now + 0.38);
         }
+
+        // 音效播放結束後自動休眠 AudioContext，避免持續佔用音訊通道導致 TTS 變小聲
+        const suspendDelay = (type === 'boom' || type === 'victory') ? 600 : 350;
+        scheduleAudioSuspend(suspendDelay);
       } catch (e) {}
     }
 
@@ -2575,11 +2627,11 @@
     }
 
     function nextQuestion() {
-      playSound('click');
       currentQuestionIndex++;
       if (currentQuestionIndex < currentQuestions.length) {
         renderQuestion();
       } else {
+        playSound('click');
         showResults();
       }
     }
