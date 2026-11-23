@@ -1,0 +1,2914 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英文單字大冒險 - 225單字大挑戰 🌟 English Vocab Quest</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            fredoka: ['Fredoka', 'Nunito', 'Noto Sans TC', 'sans-serif'],
+            sans: ['Nunito', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            skybrand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            },
+            sunny: {
+              100: '#fef9c3',
+              400: '#facc15',
+              500: '#eab308',
+              600: '#ca8a04',
+            },
+            coral: {
+              400: '#fb7185',
+              500: '#f43f5e',
+              600: '#e11d48',
+            }
+          },
+          animation: {
+            'bounce-short': 'bounce 0.6s ease-in-out 1',
+            'pop': 'pop 0.25s ease-out',
+            'shake': 'shake 0.4s ease-in-out',
+            'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            pop: {
+              '0%': { transform: 'scale(0.85)', opacity: '0' },
+              '70%': { transform: 'scale(1.05)' },
+              '100%': { transform: 'scale(1)', opacity: '1' }
+            },
+            shake: {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '20%, 60%': { transform: 'translateX(-8px)' },
+              '40%, 80%': { transform: 'translateX(8px)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      border: 3px solid rgba(255, 255, 255, 0.8);
+    }
+    
+    .bg-animated {
+      background: linear-gradient(-45deg, #e0f2fe, #fef3c7, #ffe4e6, #f3e8ff, #dcfce7);
+      background-size: 400% 400%;
+      animation: gradientBG 18s ease infinite;
+    }
+    
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .btn-press {
+      transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-press:active {
+      transform: translateY(3px) scale(0.97);
+      box-shadow: none !important;
+    }
+    
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* 時間到小爆炸動畫特效 */
+    @keyframes boomPop {
+      0% { transform: scale(0.2) rotate(-15deg); opacity: 0; }
+      40% { transform: scale(1.35) rotate(8deg); opacity: 1; }
+      70% { transform: scale(0.95) rotate(-4deg); opacity: 1; }
+      100% { transform: scale(1.1) rotate(0deg); opacity: 0; }
+    }
+    @keyframes shockwaveRing {
+      0% { transform: scale(0.2); opacity: 0.95; border-width: 10px; }
+      100% { transform: scale(2.4); opacity: 0; border-width: 1px; }
+    }
+    @keyframes sparkBurst {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0.2); opacity: 0; }
+    }
+    .boom-emoji {
+      animation: boomPop 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .boom-ring {
+      animation: shockwaveRing 0.75s ease-out forwards;
+    }
+    .boom-spark {
+      animation: sparkBurst 0.75s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="bg-animated min-h-screen text-slate-800 flex flex-col justify-between overflow-x-hidden relative">
+
+  <!-- 全螢幕粒子特效 Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- 頂部通用導覽列 -->
+  <header class="w-full max-w-5xl mx-auto px-4 pt-4 flex flex-wrap justify-between items-center gap-2 z-20">
+    <!-- 左側標題 -->
+    <div onclick="showStartScreen()" class="cursor-pointer flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-md border-2 border-white hover:scale-105 transition-transform">
+      <span class="text-2xl animate-bounce">🚀</span>
+      <div>
+        <h1 class="font-black text-skybrand-700 tracking-wide text-base md:text-lg leading-none">英文單字大冒險</h1>
+        <span class="text-[10px] font-bold text-amber-500 bg-amber-100 px-1.5 py-0.5 rounded-md">225 單字完整版</span>
+      </div>
+    </div>
+
+    <!-- 右側控制面板 (中文開關 + 語速 + 音效) -->
+    <div class="flex items-center gap-2 flex-wrap">
+      
+      <!-- 中文顯示全域開關 Toggle -->
+      <div class="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-2 text-xs md:text-sm font-bold">
+        <span class="text-slate-600 flex items-center gap-1">
+          <i class="fa-solid fa-language text-skybrand-500 text-base"></i> 中文對照:
+        </span>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="globalZhToggle" class="sr-only peer" onchange="toggleGlobalZh(this.checked)">
+          <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+        </label>
+        <span id="zhToggleLabel" class="text-xs text-emerald-600 w-8">開啟</span>
+      </div>
+
+      <!-- 語速切換鈕 -->
+      <button id="speedToggleBtn" onclick="toggleSpeechRate()" 
+              class="btn-press bg-white/90 hover:bg-white text-slate-700 font-bold px-3 py-1.5 rounded-2xl shadow-sm border border-slate-200 text-xs md:text-sm flex items-center gap-1.5"
+              title="切換英文發音語速">
+        <i class="fa-solid fa-gauge-high text-skybrand-500"></i>
+        <span id="speedLabel" class="text-skybrand-700">1.0x</span>
+      </button>
+
+      <!-- 音效開關鈕 -->
+      <button id="soundToggleBtn" onclick="toggleSound()" 
+              class="btn-press bg-white/90 hover:bg-white text-slate-700 p-2 rounded-2xl shadow-sm border border-slate-200 text-sm flex items-center justify-center w-9 h-9"
+              title="開關音效">
+        <i id="soundIcon" class="fa-solid fa-volume-high text-amber-500"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主內容容器 -->
+  <main class="w-full max-w-3xl mx-auto px-4 py-4 flex-1 flex flex-col justify-center items-center z-10">
+
+    <!-- ================= 1. 主選單/遊戲設定畫面 (START SCREEN) ================= -->
+    <section id="startScreen" class="w-full glass-card rounded-3xl p-5 md:p-8 shadow-2xl text-center border-4 border-white/90 animate-pop">
+      
+      <div class="inline-block p-3 bg-amber-100 rounded-full mb-2 shadow-inner">
+        <span class="text-5xl animate-bounce-short inline-block">🌟</span>
+      </div>
+      
+      <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-1">國小英文 225 單字闖關</h2>
+      <p class="text-slate-600 text-xs md:text-sm mb-5 font-medium">聽音、拼字、記單字！挑戰你的最高連擊數！</p>
+
+      <!-- 設定區塊 (範圍 / 題數 / 模式) -->
+      <div class="space-y-4 text-left bg-slate-50/90 p-4 md:p-5 rounded-2xl border border-slate-200 mb-6">
+        
+        <!-- 範圍選擇 Range -->
+        <div>
+          <label class="block text-xs font-extrabold text-slate-600 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group text-skybrand-500"></i> 1. 選擇單字範圍：
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button onclick="setRange('demo')" id="range-demo" class="range-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm hover:border-skybrand-300">
+              🌱 示範 (01–10)
+            </button>
+            <button onclick="setRange('r1')" id="range-r1" class="range-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm hover:border-skybrand-300">
+              第 1 區 (01–45)
+            </button>
+            <button onclick="setRange('r2')" id="range-r2" class="range-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm hover:border-skybrand-300">
+              第 2 區 (46–90)
+            </button>
+            <button onclick="setRange('r3')" id="range-r3" class="range-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm hover:border-skybrand-300">
+              第 3 區 (91–135)
+            </button>
+            <button onclick="setRange('r4')" id="range-r4" class="range-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm hover:border-skybrand-300">
+              第 4 區 (136–180)
+            </button>
+            <button onclick="setRange('r5')" id="range-r5" class="range-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm hover:border-skybrand-300">
+              第 5 區 (181–225)
+            </button>
+            <button onclick="setRange('all')" id="range-all" class="range-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm hover:border-skybrand-300">
+              👑 全部 (01–225)
+            </button>
+            <button onclick="setRange('custom')" id="range-custom" class="range-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm hover:border-skybrand-300">
+              🎯 自訂範圍
+            </button>
+          </div>
+
+          <!-- 自訂題號輸入區塊 (選擇自訂範圍時顯示) -->
+          <div id="customRangeBox" class="hidden mt-3 p-3 bg-skybrand-50/90 rounded-xl border border-skybrand-200 flex flex-wrap items-center justify-between gap-2 animate-pop">
+            <div class="flex items-center gap-1.5 sm:gap-2 text-xs font-bold text-slate-700">
+              <span>第</span>
+              <input type="number" id="customStartInput" min="1" max="225" value="52" oninput="updateCustomRangePreview()"
+                     class="w-16 px-2 py-1.5 text-center font-black text-skybrand-700 bg-white border-2 border-skybrand-300 rounded-lg focus:outline-none focus:border-skybrand-500">
+              <span>題 ～ 第</span>
+              <input type="number" id="customEndInput" min="1" max="225" value="63" oninput="updateCustomRangePreview()"
+                     class="w-16 px-2 py-1.5 text-center font-black text-skybrand-700 bg-white border-2 border-skybrand-300 rounded-lg focus:outline-none focus:border-skybrand-500">
+              <span>題</span>
+            </div>
+            <span id="customRangeCountPreview" class="text-xs font-extrabold text-skybrand-600 bg-white px-2.5 py-1 rounded-lg border border-skybrand-200">
+              共 12 題
+            </span>
+          </div>
+        </div>
+
+        <!-- 題數選擇 Question Count -->
+        <div>
+          <label class="block text-xs font-extrabold text-slate-600 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-list-check text-amber-500"></i> 2. 選擇每輪題數：
+          </label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="setCount(10)" id="count-10" class="count-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-1 rounded-xl text-xs text-center shadow-sm">
+              10 題
+            </button>
+            <button onclick="setCount(15)" id="count-15" class="count-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-1 rounded-xl text-xs text-center shadow-sm">
+              15 題
+            </button>
+            <button onclick="setCount(20)" id="count-20" class="count-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-1 rounded-xl text-xs text-center shadow-sm">
+              20 題
+            </button>
+            <button onclick="setCount('all')" id="count-all" class="count-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-1 rounded-xl text-xs text-center shadow-sm">
+              該區全部
+            </button>
+          </div>
+        </div>
+
+        <!-- 題型模式 Mode Selector -->
+        <div>
+          <label class="block text-xs font-extrabold text-slate-600 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-gamepad text-purple-500"></i> 3. 選擇遊戲模式：
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <button onclick="setQuizMode('listen_choice')" id="mode-listen_choice" class="mode-btn bg-white border border-slate-200 text-slate-700 font-bold py-2.5 px-2 rounded-xl text-xs md:text-sm text-center shadow-sm">
+              🎧 聽音選字
+            </button>
+            <button onclick="setQuizMode('spelling')" id="mode-spelling" class="mode-btn bg-white border border-slate-200 text-slate-700 font-bold py-2.5 px-2 rounded-xl text-xs md:text-sm text-center shadow-sm">
+              🔤 聽音拼字
+            </button>
+            <button onclick="setQuizMode('zh_en')" id="mode-zh_en" class="mode-btn bg-white border border-slate-200 text-slate-700 font-bold py-2.5 px-2 rounded-xl text-xs md:text-sm text-center shadow-sm">
+              👁️ 看中選英
+            </button>
+            <button onclick="setQuizMode('speaking')" id="mode-speaking" class="mode-btn bg-white border border-slate-200 text-slate-700 font-bold py-2.5 px-2 rounded-xl text-xs md:text-sm text-center shadow-sm">
+              🎤 口說唸字
+            </button>
+            <button onclick="setQuizMode('mixed')" id="mode-mixed" class="mode-btn bg-white border border-slate-200 text-slate-700 font-bold py-2.5 px-2 rounded-xl text-xs md:text-sm text-center shadow-sm col-span-2 sm:col-span-1">
+              🎲 隨機混和
+            </button>
+          </div>
+        </div>
+
+        <!-- 出題順序與答題時間限制 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <!-- 出題順序 -->
+          <div>
+            <label class="block text-xs font-extrabold text-slate-600 mb-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-shuffle text-emerald-500"></i> 4. 出題順序：
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="setOrder('random')" id="order-random" class="order-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm">
+                🔀 隨機出題
+              </button>
+              <button onclick="setOrder('sequential')" id="order-sequential" class="order-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-xl text-xs text-center shadow-sm">
+                🔢 依序出題
+              </button>
+            </div>
+          </div>
+
+          <!-- 每題限時 -->
+          <div>
+            <label class="block text-xs font-extrabold text-slate-600 mb-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-stopwatch text-rose-500"></i> 5. 每題答題限時：
+            </label>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button onclick="setTimeLimit(10)" id="time-10" class="time-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-1 rounded-xl text-xs text-center shadow-sm">
+                10秒
+              </button>
+              <button onclick="setTimeLimit(15)" id="time-15" class="time-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-1 rounded-xl text-xs text-center shadow-sm">
+                15秒
+              </button>
+              <button onclick="setTimeLimit(20)" id="time-20" class="time-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-1 rounded-xl text-xs text-center shadow-sm">
+                20秒
+              </button>
+              <button onclick="setTimeLimit(30)" id="time-30" class="time-btn bg-white border border-slate-200 text-slate-700 font-bold py-2 px-1 rounded-xl text-xs text-center shadow-sm">
+                30秒
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 操作按鈕鈕組 -->
+      <div class="space-y-3">
+        <!-- 開始按鈕 -->
+        <button onclick="startQuiz(false)" class="btn-press w-full bg-gradient-to-r from-skybrand-500 to-blue-600 hover:from-skybrand-600 hover:to-blue-700 text-white font-black text-xl py-4 rounded-2xl shadow-lg shadow-skybrand-500/30 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-play"></i> 開始單字大冒險
+        </button>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <!-- 錯題特訓按鈕 -->
+          <button id="wrongBankBtn" onclick="startQuiz(true)" class="btn-press bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-3 rounded-2xl shadow-md shadow-amber-500/20 text-xs md:text-sm flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-fire text-amber-200"></i>
+            <span>錯題特訓 (<span id="wrongCountBadge">0</span>)</span>
+          </button>
+
+          <!-- 測驗與錯題歷史紀錄按鈕 -->
+          <button onclick="openHistoryModal()" class="btn-press bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-3 rounded-2xl shadow-md shadow-rose-500/20 text-xs md:text-sm flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>錯題紀錄 (<span id="historyCountBadge">0</span>)</span>
+          </button>
+
+          <!-- 單字總覽按鈕 -->
+          <button onclick="openFlashcardModal()" class="btn-press bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-3 rounded-2xl shadow-md shadow-purple-500/20 text-xs md:text-sm flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-book-open"></i>
+            <span>225 單字總覽</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 2. 測驗進行中畫面 (QUIZ SCREEN) ================= -->
+    <section id="quizScreen" class="w-full glass-card rounded-3xl p-4 md:p-7 shadow-2xl border-4 border-white/90 hidden">
+      
+      <!-- 頂部資訊列：進度、倒數計時與連擊徽章 -->
+      <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+        <!-- 進度 -->
+        <div class="flex items-center gap-2">
+          <span class="bg-skybrand-100 text-skybrand-700 font-extrabold px-3 py-1 rounded-full text-xs md:text-sm border border-skybrand-200">
+            題號 <span id="currentQuestionNum">1</span> / <span id="totalQuestionNum">10</span>
+          </span>
+          <span id="rangeBadgeDisplay" class="bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-full text-xs">
+            示範區
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- 倒數計時器 -->
+          <div id="timerBadge" class="flex items-center gap-1.5 bg-skybrand-50 text-skybrand-700 border-2 border-skybrand-200 font-black px-3 py-1 rounded-full text-xs md:text-sm transition-all">
+            <i id="timerIcon" class="fa-solid fa-stopwatch"></i>
+            <span id="timerText">15s</span>
+          </div>
+
+          <!-- 連擊 Combo 徽章 -->
+          <div id="comboContainer" class="opacity-0 transition-all duration-300 flex items-center gap-1 bg-gradient-to-r from-amber-400 to-coral-500 text-white font-black px-3 py-1 rounded-full shadow-md text-xs md:text-sm">
+            <i class="fa-solid fa-fire animate-bounce"></i>
+            <span id="comboText">2 連擊！</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 進度條 -->
+      <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden mb-5 border border-slate-100">
+        <div id="progressBar" class="bg-gradient-to-r from-skybrand-400 to-emerald-400 h-full transition-all duration-300 rounded-full" style="width: 10%;"></div>
+      </div>
+
+      <!-- 題目核心區 -->
+      <div id="questionCard" class="bg-white/90 rounded-2xl p-5 shadow-inner text-center mb-5 relative border border-slate-100 min-h-[160px] flex flex-col items-center justify-center overflow-hidden">
+        
+        <!-- 小爆炸動畫容器 (時間到時顯示) -->
+        <div id="explosionOverlay" class="pointer-events-none absolute inset-0 flex items-center justify-center z-20 hidden"></div>
+
+        <!-- 題型提示標籤 -->
+        <span id="questionTypeBadge" class="absolute top-3 left-3 text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+          🎧 聽音選字
+        </span>
+
+        <!-- 大聲音朗讀鈕 -->
+        <button id="speakWordBtn" onclick="speakCurrentWord()" 
+                class="btn-press bg-skybrand-100 hover:bg-skybrand-200 text-skybrand-600 w-16 h-16 rounded-full mb-3 shadow-md flex items-center justify-center text-2xl border-2 border-skybrand-300"
+                title="點擊聽發音">
+          <i class="fa-solid fa-volume-high animate-pulse-slow"></i>
+        </button>
+
+        <!-- 題目主要顯示區 (單字/中文/或隱藏) -->
+        <div id="questionMainText" class="text-2xl md:text-4xl font-black text-slate-800 tracking-wide my-1">
+          apple
+        </div>
+
+        <!-- 中文對照提示區 (依全域 Toggle 顯示或隱藏) -->
+        <div id="questionZhHint" class="text-skybrand-600 font-bold text-sm md:text-base mt-1 bg-skybrand-50 px-3 py-0.5 rounded-lg border border-skybrand-100">
+          (中文提示: 蘋果)
+        </div>
+
+        <div id="questionSubHint" class="text-slate-400 text-xs mt-1">
+          點擊上方發音鈕可重複聽音
+        </div>
+      </div>
+
+      <!-- 模式 A: 四選一選項區 (Multiple Choice) -->
+      <div id="optionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <!-- 由 JS 動態生成按鈕 -->
+      </div>
+
+      <!-- 選擇題語音輔助答題列 -->
+      <div id="choiceVoiceBar" class="hidden mb-4 flex flex-col items-center justify-center gap-1.5">
+        <button id="choiceMicBtn" onclick="toggleVoiceInput('choice')" class="btn-press bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-2 border-indigo-200 font-bold px-4 py-2 rounded-2xl text-xs md:text-sm flex items-center gap-2 shadow-sm transition-all">
+          <i id="choiceMicIcon" class="fa-solid fa-microphone text-indigo-500"></i>
+          <span id="choiceMicLabel">🎤 用說的答題（唸出英文單字）</span>
+        </button>
+        <div id="choiceVoiceHint" class="text-xs font-bold text-slate-500 min-h-[18px]"></div>
+      </div>
+
+      <!-- 模式 B: 聽音拼字區 (Spelling Challenge) -->
+      <div id="spellingContainer" class="hidden mb-4 space-y-4">
+        <!-- 填空顯示槽 (Slots) -->
+        <div id="spellingSlots" class="flex flex-wrap justify-center gap-2 py-3 bg-slate-100/80 rounded-2xl border border-slate-200 min-h-[64px] px-2 items-center">
+          <!-- 動態插入方塊 -->
+        </div>
+
+        <!-- 拼字語音輸入控制列 (唸英文字母拼音答題) -->
+        <div id="spellingVoiceBar" class="flex flex-col items-center justify-center gap-1.5">
+          <button id="spellingMicBtn" onclick="toggleVoiceInput('spelling')" class="btn-press bg-purple-50 hover:bg-purple-100 text-purple-700 border-2 border-purple-200 font-bold px-4 py-2 rounded-2xl text-xs md:text-sm flex items-center gap-2 shadow-sm transition-all">
+            <i id="spellingMicIcon" class="fa-solid fa-microphone text-purple-500"></i>
+            <span id="spellingMicLabel">🎤 語音唸字母拼字（如唸 A-P-P-L-E）</span>
+          </button>
+          <div id="spellingVoiceHint" class="text-xs font-bold text-slate-500 min-h-[18px]"></div>
+        </div>
+
+        <!-- 可選字母按鈕庫 (Tiles) -->
+        <div id="spellingTiles" class="flex flex-wrap justify-center gap-2 py-2">
+          <!-- 動態插入字母卡片 -->
+        </div>
+
+        <!-- 拼字工具按鈕組 -->
+        <div class="flex justify-center gap-2">
+          <button onclick="giveSpellingHint()" class="btn-press bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 border border-amber-300">
+            <i class="fa-solid fa-lightbulb"></i> 提示一字
+          </button>
+          <button onclick="clearSpelling()" class="btn-press bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
+            <i class="fa-solid fa-rotate-left"></i> 清除重新
+          </button>
+          <button onclick="backspaceSpelling()" class="btn-press bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
+            <i class="fa-solid fa-delete-left"></i> 刪除倒退
+          </button>
+        </div>
+      </div>
+
+      <!-- 模式 C: 口說唸字區 (Speaking Voice Input Challenge) -->
+      <div id="speakingContainer" class="hidden mb-4 space-y-3 text-center">
+        <div class="bg-slate-50/90 rounded-2xl p-5 border-2 border-slate-200 flex flex-col items-center justify-center gap-3">
+          <button id="speakAnswerBtn" onclick="toggleVoiceInput('speaking')" class="btn-press w-20 h-20 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white text-3xl shadow-lg shadow-rose-500/30 flex items-center justify-center border-4 border-white transition-all">
+            <i id="speakAnswerIcon" class="fa-solid fa-microphone"></i>
+          </button>
+          <div id="voiceStatusText" class="text-sm font-extrabold text-slate-700">
+            點擊麥克風或按空白鍵 (Space) 唸出英文單字
+          </div>
+          <div id="voiceTranscriptBox" class="hidden bg-white px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-skybrand-700 shadow-inner">
+            聽到：<span id="voiceTranscriptText" class="text-slate-800"></span>
+          </div>
+        </div>
+        <div class="flex justify-center gap-2">
+          <button onclick="speakCurrentWord()" class="btn-press bg-skybrand-100 hover:bg-skybrand-200 text-skybrand-700 font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1 border border-skybrand-200">
+            <i class="fa-solid fa-volume-high"></i> 聽發音提示
+          </button>
+          <button onclick="skipSpeakingQuestion()" class="btn-press bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1">
+            <i class="fa-solid fa-forward"></i> 跳過看答案
+          </button>
+        </div>
+      </div>
+
+      <!-- 答題反饋卡 (Feedback Box) -->
+      <div id="feedbackBox" class="hidden rounded-2xl p-4 transition-all animate-pop mb-3 text-center">
+        <div id="feedbackTitle" class="font-black text-lg mb-1"></div>
+        <div id="feedbackDetail" class="text-xs md:text-sm text-slate-700 font-bold"></div>
+      </div>
+
+      <!-- 下一題按鈕 -->
+      <button id="nextBtn" onclick="nextQuestion()" class="btn-press hidden w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold py-3.5 rounded-2xl shadow-lg text-base items-center justify-center gap-2">
+        <span>下一題 (Enter)</span> <i class="fa-solid fa-arrow-right"></i>
+      </button>
+
+    </section>
+
+    <!-- ================= 3. 結算成績畫面 (RESULT SCREEN) ================= -->
+    <section id="resultScreen" class="w-full glass-card rounded-3xl p-6 md:p-8 shadow-2xl text-center border-4 border-white/90 hidden animate-pop">
+      
+      <!-- 結算圖示 -->
+      <div class="inline-block p-4 bg-amber-100 rounded-full mb-3 shadow-inner">
+        <span id="resultEmoji" class="text-6xl animate-bounce inline-block">🏆</span>
+      </div>
+
+      <h2 id="resultTitle" class="text-3xl font-black text-slate-800 mb-1">冒險完成！</h2>
+      <p id="resultSubtitle" class="text-slate-500 text-xs md:text-sm mb-4">你的英文實力又提升了！</p>
+
+      <!-- 星級評分 -->
+      <div id="starContainer" class="flex justify-center gap-2 text-4xl text-amber-400 mb-5">
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+      </div>
+
+      <!-- 數據統計區 -->
+      <div class="grid grid-cols-3 gap-2 bg-slate-100/90 p-4 rounded-2xl mb-5 border border-slate-200">
+        <div>
+          <div class="text-[11px] text-slate-400 font-extrabold mb-1">答對題數</div>
+          <div id="finalScore" class="text-2xl font-black text-skybrand-600">10 / 10</div>
+        </div>
+        <div>
+          <div class="text-[11px] text-slate-400 font-extrabold mb-1">最高連擊</div>
+          <div id="finalMaxCombo" class="text-2xl font-black text-coral-500">5</div>
+        </div>
+        <div>
+          <div class="text-[11px] text-slate-400 font-extrabold mb-1">正確率</div>
+          <div id="finalAccuracy" class="text-2xl font-black text-emerald-600">100%</div>
+        </div>
+      </div>
+
+      <!-- 本輪錯題檢討區 -->
+      <div id="sessionWrongSection" class="hidden mb-5 text-left">
+        <h3 class="text-xs md:text-sm font-extrabold text-slate-700 mb-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 本次需加強單字：
+        </h3>
+        <div id="sessionWrongList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+          <!-- 動態插入錯題列表 -->
+        </div>
+      </div>
+
+      <!-- 按鈕組 -->
+      <div class="space-y-3">
+        <!-- 錯題特訓 -->
+        <button id="retryWrongBtn" onclick="startQuiz(true)" class="btn-press hidden w-full bg-gradient-to-r from-amber-400 to-coral-500 hover:from-amber-500 hover:to-coral-600 text-white font-black py-3.5 rounded-2xl shadow-lg shadow-coral-500/20 text-base items-center justify-center gap-2">
+          <i class="fa-solid fa-fire"></i> 🔥 立即特訓本輪錯題
+        </button>
+
+        <button onclick="startQuiz(false)" class="btn-press w-full bg-skybrand-500 hover:bg-skybrand-600 text-white font-extrabold py-3.5 rounded-2xl shadow-md text-base flex items-center justify-center gap-2">
+          <i class="fa-solid fa-rotate-right"></i> 再玩一次
+        </button>
+
+        <button onclick="showStartScreen()" class="btn-press w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-2xl text-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-house"></i> 回到主選單
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= 4. 225 單字表預習視窗 (STUDY BANK MODAL) ================= -->
+  <div id="flashcardModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-5 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[88vh] flex flex-col shadow-2xl border-4 border-white animate-pop">
+      
+      <!-- Modal 頂部 -->
+      <div class="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl">
+        <div>
+          <h3 class="font-black text-lg md:text-xl text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-book-open text-purple-500"></i> 225 單字學習庫
+          </h3>
+          <p class="text-slate-500 text-xs mt-0.5">點擊喇叭朗讀單字，點擊卡片可偷看中文</p>
+        </div>
+        <button onclick="closeFlashcardModal()" class="text-slate-400 hover:text-slate-600 p-2 text-xl font-bold rounded-full hover:bg-slate-200 w-10 h-10 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- 篩選與搜尋欄 -->
+      <div class="p-3 md:p-4 bg-slate-100/70 border-b border-slate-200 space-y-2">
+        <!-- 搜尋框 -->
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+          <input type="text" id="bankSearchInput" oninput="filterFlashcards()" placeholder="搜尋英文單字或中文意思..." 
+                 class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-purple-500 bg-white">
+        </div>
+
+        <!-- 區域分頁按鈕 -->
+        <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+          <button onclick="setModalCategory('all')" id="bank-cat-all" class="bank-cat-btn bg-purple-500 text-white font-bold px-3 py-1.5 rounded-lg whitespace-nowrap shadow-sm">全部 (225)</button>
+          <button onclick="setModalCategory('r1')" id="bank-cat-r1" class="bank-cat-btn bg-white text-slate-700 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap border border-slate-200">1區 (01-45)</button>
+          <button onclick="setModalCategory('r2')" id="bank-cat-r2" class="bank-cat-btn bg-white text-slate-700 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap border border-slate-200">2區 (46-90)</button>
+          <button onclick="setModalCategory('r3')" id="bank-cat-r3" class="bank-cat-btn bg-white text-slate-700 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap border border-slate-200">3區 (91-135)</button>
+          <button onclick="setModalCategory('r4')" id="bank-cat-r4" class="bank-cat-btn bg-white text-slate-700 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap border border-slate-200">4區 (136-180)</button>
+          <button onclick="setModalCategory('r5')" id="bank-cat-r5" class="bank-cat-btn bg-white text-slate-700 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap border border-slate-200">5區 (181-225)</button>
+          <button onclick="setModalCategory('wrong')" id="bank-cat-wrong" class="bank-cat-btn bg-white text-amber-600 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap border border-amber-200">🔥 錯題本</button>
+        </div>
+      </div>
+
+      <!-- 單字卡網格列表 -->
+      <div id="flashcardList" class="p-4 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 bg-slate-50/50">
+        <!-- 由 JS 動態生成單字卡 -->
+      </div>
+
+      <!-- Modal 底部 -->
+      <div class="p-3 md:p-4 border-t border-slate-200 bg-white rounded-b-3xl flex justify-between items-center">
+        <button onclick="clearAllWrongRecords()" class="text-xs text-rose-500 hover:text-rose-700 font-bold underline">
+          <i class="fa-solid fa-trash-can"></i> 清空所有錯題紀錄
+        </button>
+        <button onclick="closeFlashcardModal()" class="btn-press bg-slate-800 hover:bg-slate-900 text-white font-bold px-5 py-2 rounded-xl text-xs md:text-sm">
+          關閉視窗
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= 5. 測驗與錯題歷史紀錄視窗 (HISTORY MODAL) ================= -->
+  <div id="historyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-5 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[88vh] flex flex-col shadow-2xl border-4 border-white animate-pop">
+      
+      <!-- Modal 頂部 -->
+      <div class="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center bg-rose-50/70 rounded-t-3xl">
+        <div>
+          <h3 class="font-black text-lg md:text-xl text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-rose-500"></i> 每次測驗與錯題紀錄
+          </h3>
+          <p class="text-slate-500 text-xs mt-0.5">完整保留每次測驗的日期、時間與答錯單字</p>
+        </div>
+        <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-slate-600 p-2 text-xl font-bold rounded-full hover:bg-slate-200 w-10 h-10 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- 紀錄列表 -->
+      <div id="historyList" class="p-4 overflow-y-auto space-y-3 flex-1 bg-slate-50/60">
+        <!-- 由 JS 動態生成每次測驗紀錄 -->
+      </div>
+
+      <!-- Modal 底部 -->
+      <div class="p-3 md:p-4 border-t border-slate-200 bg-white rounded-b-3xl flex justify-between items-center">
+        <button onclick="clearTestHistory()" class="text-xs text-rose-500 hover:text-rose-700 font-bold underline">
+          <i class="fa-solid fa-trash-can"></i> 清空測驗歷史紀錄
+        </button>
+        <button onclick="closeHistoryModal()" class="btn-press bg-slate-800 hover:bg-slate-900 text-white font-bold px-5 py-2 rounded-xl text-xs md:text-sm">
+          關閉視窗
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 自訂提示 / 確認視窗 (取代瀏覽器原生 alert/confirm) -->
+  <div id="customDialog" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl border-4 border-white text-center animate-pop">
+      <div id="dialogIcon" class="text-4xl mb-2">💬</div>
+      <p id="dialogMessage" class="text-slate-700 font-bold text-base mb-5"></p>
+      <div id="dialogButtons" class="flex justify-center gap-3">
+        <button id="dialogCancelBtn" onclick="closeCustomDialog()" class="btn-press hidden flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl text-sm">
+          取消
+        </button>
+        <button id="dialogConfirmBtn" class="btn-press flex-1 bg-skybrand-500 hover:bg-skybrand-600 text-white font-bold py-2.5 rounded-xl text-sm">
+          確定
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 頁尾 -->
+  <footer class="w-full text-center py-3 text-xs text-slate-500 z-10 font-medium">
+    英文單字大冒險 ‧ 快樂學習無負擔 ❤️ 225 單字完整版
+  </footer>
+
+  <!-- ================= JavaScript 邏輯核心 ================= -->
+  <script>
+    /* 
+    =================================================================
+    📚 1. 完整 225 個單字資料庫 (VOCAB_LIST)
+    =================================================================
+    */
+    const VOCAB_LIST = [
+      { id: 1, word: "adventure", zh: "冒險" },
+      { id: 2, word: "cancel", zh: "取消" },
+      { id: 3, word: "nineteen", zh: "十九" },
+      { id: 4, word: "noise", zh: "噪音" },
+      { id: 5, word: "squirrel", zh: "松鼠" },
+      { id: 6, word: "tiny", zh: "微小的" },
+      { id: 7, word: "aunt", zh: "阿姨/姑姑" },
+      { id: 8, word: "tuna", zh: "鮪魚" },
+      { id: 9, word: "meter", zh: "公尺/儀表" },
+      { id: 10, word: "ghost", zh: "鬼/幽靈" },
+      { id: 11, word: "wrist", zh: "手腕" },
+      { id: 12, word: "history", zh: "歷史" },
+      { id: 13, word: "striving", zh: "努力/奮鬥" },
+      { id: 14, word: "alarm", zh: "鬧鐘/警報" },
+      { id: 15, word: "caught", zh: "抓住(過去式)" },
+      { id: 16, word: "fuel", zh: "燃料" },
+      { id: 17, word: "usually", zh: "通常" },
+      { id: 18, word: "dear", zh: "親愛的" },
+      { id: 19, word: "package", zh: "包裹" },
+      { id: 20, word: "haircut", zh: "理髮" },
+      { id: 21, word: "ocean", zh: "海洋" },
+      { id: 22, word: "odd", zh: "奇怪的/奇數的" },
+      { id: 23, word: "beggar", zh: "乞丐" },
+      { id: 24, word: "whistle", zh: "吹口哨/哨子" },
+      { id: 25, word: "understand", zh: "理解/明白" },
+      { id: 26, word: "crow", zh: "烏鴉" },
+      { id: 27, word: "camera", zh: "相機" },
+      { id: 28, word: "amount", zh: "數量/總額" },
+      { id: 29, word: "ground", zh: "地面" },
+      { id: 30, word: "energy", zh: "能量/精力" },
+      { id: 31, word: "usual", zh: "平常的" },
+      { id: 32, word: "climate", zh: "氣候" },
+      { id: 33, word: "earth", zh: "地球/泥土" },
+      { id: 34, word: "check", zh: "檢查/支票" },
+      { id: 35, word: "restaurant", zh: "餐廳" },
+      { id: 36, word: "fleece", zh: "羊毛/刷毛布" },
+      { id: 37, word: "classmate", zh: "同學" },
+      { id: 38, word: "if", zh: "如果" },
+      { id: 39, word: "medicine", zh: "藥/醫學" },
+      { id: 40, word: "space", zh: "太空/空間" },
+      { id: 41, word: "pants", zh: "長褲" },
+      { id: 42, word: "freckle", zh: "雀斑" },
+      { id: 43, word: "chicken", zh: "雞/雞肉" },
+      { id: 44, word: "middle", zh: "中間" },
+      { id: 45, word: "mother", zh: "母親/媽媽" },
+      { id: 46, word: "habitat", zh: "棲息地" },
+      { id: 47, word: "typhoon", zh: "颱風" },
+      { id: 48, word: "forget", zh: "忘記" },
+      { id: 49, word: "vulture", zh: "禿鷹" },
+      { id: 50, word: "officer", zh: "警官/官員" },
+      { id: 51, word: "fact", zh: "事實" },
+      { id: 52, word: "airplane", zh: "飛機" },
+      { id: 53, word: "sink", zh: "水槽/下沉" },
+      { id: 54, word: "prepare", zh: "準備" },
+      { id: 55, word: "envelope", zh: "信封" },
+      { id: 56, word: "dawn", zh: "黎明/拂曉" },
+      { id: 57, word: "weekend", zh: "週末" },
+      { id: 58, word: "neighbor", zh: "鄰居" },
+      { id: 59, word: "once", zh: "一次/曾經" },
+      { id: 60, word: "libraries", zh: "圖書館(複數)" },
+      { id: 61, word: "unhappy", zh: "不開心的" },
+      { id: 62, word: "country", zh: "國家/鄉村" },
+      { id: 63, word: "continue", zh: "繼續" },
+      { id: 64, word: "ladder", zh: "梯子" },
+      { id: 65, word: "chimney", zh: "煙囪" },
+      { id: 66, word: "taste", zh: "品嚐/味道" },
+      { id: 67, word: "visit", zh: "拜訪/參觀" },
+      { id: 68, word: "thousand", zh: "一千" },
+      { id: 69, word: "follow", zh: "跟隨" },
+      { id: 70, word: "waitress", zh: "女服務生" },
+      { id: 71, word: "kangaroo", zh: "袋鼠" },
+      { id: 72, word: "back", zh: "背部/回來" },
+      { id: 73, word: "handsome", zh: "英俊的" },
+      { id: 74, word: "could", zh: "能夠/可以" },
+      { id: 75, word: "impossible", zh: "不可能的" },
+      { id: 76, word: "slumber", zh: "沉睡/睡眠" },
+      { id: 77, word: "correct", zh: "正確的/改正" },
+      { id: 78, word: "difficult", zh: "困難的" },
+      { id: 79, word: "electricity", zh: "電力/電" },
+      { id: 80, word: "apartment", zh: "公寓" },
+      { id: 81, word: "voyage", zh: "航行/旅程" },
+      { id: 82, word: "suit", zh: "西裝/適合" },
+      { id: 83, word: "heat", zh: "熱/加熱" },
+      { id: 84, word: "interest", zh: "興趣/利息" },
+      { id: 85, word: "seem", zh: "似乎/看起來" },
+      { id: 86, word: "secretary", zh: "秘書" },
+      { id: 87, word: "raise", zh: "舉起/飼養" },
+      { id: 88, word: "sneezing", zh: "打噴嚏" },
+      { id: 89, word: "twice", zh: "兩次" },
+      { id: 90, word: "pioneer", zh: "先驅/開拓者" },
+      { id: 91, word: "giant", zh: "巨人/巨大的" },
+      { id: 92, word: "railroad", zh: "鐵路" },
+      { id: 93, word: "graph", zh: "圖表" },
+      { id: 94, word: "repeat", zh: "重複" },
+      { id: 95, word: "heard", zh: "聽見(過去式)" },
+      { id: 96, word: "junior", zh: "年少的/國中生" },
+      { id: 97, word: "alive", zh: "活著的" },
+      { id: 98, word: "wrong", zh: "錯誤的" },
+      { id: 99, word: "gist", zh: "要點/大意" },
+      { id: 100, word: "wheelchair", zh: "輪椅" },
+      { id: 101, word: "often", zh: "經常" },
+      { id: 102, word: "scariest", zh: "最可怕的" },
+      { id: 103, word: "knock", zh: "敲門/敲擊" },
+      { id: 104, word: "everything", zh: "每件事/一切" },
+      { id: 105, word: "agree", zh: "同意" },
+      { id: 106, word: "telephone", zh: "電話" },
+      { id: 107, word: "possible", zh: "可能的" },
+      { id: 108, word: "never", zh: "從不" },
+      { id: 109, word: "crumb", zh: "麵包屑/碎屑" },
+      { id: 110, word: "gravity", zh: "重力/地心引力" },
+      { id: 111, word: "signature", zh: "簽名" },
+      { id: 112, word: "recommend", zh: "推薦" },
+      { id: 113, word: "opinion", zh: "意見/看法" },
+      { id: 114, word: "waves", zh: "海浪/波浪" },
+      { id: 115, word: "learn", zh: "學習" },
+      { id: 116, word: "solve", zh: "解決" },
+      { id: 117, word: "wallet", zh: "錢包" },
+      { id: 118, word: "universe", zh: "宇宙" },
+      { id: 119, word: "transfer", zh: "轉移/轉車" },
+      { id: 120, word: "neither", zh: "兩者都不" },
+      { id: 121, word: "clear", zh: "清楚的/晴朗的" },
+      { id: 122, word: "drawer", zh: "抽屜" },
+      { id: 123, word: "urge", zh: "催促/渴望" },
+      { id: 124, word: "supermarket", zh: "超級市場" },
+      { id: 125, word: "circuit", zh: "電路/巡迴" },
+      { id: 126, word: "excuse", zh: "藉口/原諒" },
+      { id: 127, word: "damage", zh: "損害/破壞" },
+      { id: 128, word: "paint", zh: "油漆/畫畫" },
+      { id: 129, word: "healthy", zh: "健康的" },
+      { id: 130, word: "daughter", zh: "女兒" },
+      { id: 131, word: "slippery", zh: "滑溜的" },
+      { id: 132, word: "laughter", zh: "笑聲" },
+      { id: 133, word: "avenue", zh: "大道/林蔭道" },
+      { id: 134, word: "broke", zh: "打破(過去式)/破產" },
+      { id: 135, word: "select", zh: "選擇/挑選" },
+      { id: 136, word: "future", zh: "未來" },
+      { id: 137, word: "couch", zh: "沙發" },
+      { id: 138, word: "remind", zh: "提醒" },
+      { id: 139, word: "terrible", zh: "可怕的/糟糕的" },
+      { id: 140, word: "decide", zh: "決定" },
+      { id: 141, word: "each", zh: "每一個" },
+      { id: 142, word: "tropical", zh: "熱帶的" },
+      { id: 143, word: "comfortable", zh: "舒適的" },
+      { id: 144, word: "disappear", zh: "消失" },
+      { id: 145, word: "straight", zh: "筆直的/直接地" },
+      { id: 146, word: "centimeter", zh: "公分" },
+      { id: 147, word: "speech", zh: "演講/言語" },
+      { id: 148, word: "pilot", zh: "飛行員/機師" },
+      { id: 149, word: "fever", zh: "發燒" },
+      { id: 150, word: "north", zh: "北方" },
+      { id: 151, word: "explain", zh: "解釋" },
+      { id: 152, word: "river", zh: "河流" },
+      { id: 153, word: "copying", zh: "複製/抄寫" },
+      { id: 154, word: "roof", zh: "屋頂" },
+      { id: 155, word: "fountain", zh: "噴泉" },
+      { id: 156, word: "maybe", zh: "也許/可能" },
+      { id: 157, word: "plastic", zh: "塑膠" },
+      { id: 158, word: "excited", zh: "興奮的" },
+      { id: 159, word: "laugh", zh: "笑/大笑" },
+      { id: 160, word: "cottage", zh: "小屋/農舍" },
+      { id: 161, word: "forecast", zh: "預報/預測" },
+      { id: 162, word: "sandwich", zh: "三明治" },
+      { id: 163, word: "bank", zh: "銀行/河岸" },
+      { id: 164, word: "shopkeeper", zh: "店主/老闆" },
+      { id: 165, word: "mouse", zh: "老鼠/滑鼠" },
+      { id: 166, word: "curl", zh: "捲曲/捲髮" },
+      { id: 167, word: "turkey", zh: "火雞" },
+      { id: 168, word: "degree", zh: "度數/學位" },
+      { id: 169, word: "government", zh: "政府" },
+      { id: 170, word: "newscast", zh: "新聞廣播" },
+      { id: 171, word: "body", zh: "身體" },
+      { id: 172, word: "beautiful", zh: "美麗的" },
+      { id: 173, word: "roses", zh: "玫瑰花(複數)" },
+      { id: 174, word: "whistling", zh: "吹口哨" },
+      { id: 175, word: "sharp", zh: "鋒利的/敏銳的" },
+      { id: 176, word: "alert", zh: "警覺的/警報" },
+      { id: 177, word: "strong", zh: "強壯的" },
+      { id: 178, word: "land", zh: "陸地/降落" },
+      { id: 179, word: "brush", zh: "刷子/刷" },
+      { id: 180, word: "bakery", zh: "麵包店" },
+      { id: 181, word: "question", zh: "問題" },
+      { id: 182, word: "grade", zh: "年級/成績" },
+      { id: 183, word: "iron", zh: "鐵/熨斗" },
+      { id: 184, word: "east", zh: "東方" },
+      { id: 185, word: "graceful", zh: "優雅的" },
+      { id: 186, word: "boxes", zh: "盒子(複數)" },
+      { id: 187, word: "mask", zh: "口罩/面具" },
+      { id: 188, word: "band", zh: "樂團/帶子" },
+      { id: 189, word: "homework", zh: "家庭作業" },
+      { id: 190, word: "consistent", zh: "一致的" },
+      { id: 191, word: "tomatoes", zh: "番茄(複數)" },
+      { id: 192, word: "twenty", zh: "二十" },
+      { id: 193, word: "actively", zh: "積極地/活躍地" },
+      { id: 194, word: "poison", zh: "毒藥" },
+      { id: 195, word: "Wednesday", zh: "星期三" },
+      { id: 196, word: "quarter", zh: "四分之一/一刻鐘" },
+      { id: 197, word: "piece", zh: "一片/一塊" },
+      { id: 198, word: "expensive", zh: "昂貴的" },
+      { id: 199, word: "speak", zh: "說/講話" },
+      { id: 200, word: "cheer", zh: "歡呼/加油" },
+      { id: 201, word: "describe", zh: "描述" },
+      { id: 202, word: "grandfather", zh: "祖父/爺爺" },
+      { id: 203, word: "drop", zh: "掉落/水滴" },
+      { id: 204, word: "tennis", zh: "網球" },
+      { id: 205, word: "strip", zh: "長條/剝去" },
+      { id: 206, word: "discover", zh: "發現" },
+      { id: 207, word: "notebook", zh: "筆記本" },
+      { id: 208, word: "early", zh: "早的/提早" },
+      { id: 209, word: "bridge", zh: "橋樑" },
+      { id: 210, word: "cardboard", zh: "厚紙板" },
+      { id: 211, word: "doctor", zh: "醫生" },
+      { id: 212, word: "volume", zh: "音量/體積" },
+      { id: 213, word: "leader", zh: "領導者/隊長" },
+      { id: 214, word: "serious", zh: "嚴肅的/嚴重的" },
+      { id: 215, word: "dirty", zh: "髒的" },
+      { id: 216, word: "foreign", zh: "外國的" },
+      { id: 217, word: "toothpaste", zh: "牙膏" },
+      { id: 218, word: "lady", zh: "女士" },
+      { id: 219, word: "humid", zh: "潮濕的" },
+      { id: 220, word: "chance", zh: "機會" },
+      { id: 221, word: "measure", zh: "測量" },
+      { id: 222, word: "doubtful", zh: "懷疑的/不確定的" },
+      { id: 223, word: "self", zh: "自己/自我" },
+      { id: 224, word: "light", zh: "光/輕的/燈" },
+      { id: 225, word: "paper", zh: "紙" }
+    ];
+
+    const LOCAL_WRONG_KEY = 'vocab_game_wrong_words_ids_v225';
+    const LOCAL_ZH_TOGGLE_KEY = 'vocab_game_show_zh';
+    const LOCAL_HISTORY_KEY = 'vocab_game_test_history_v1';
+
+    // 遊戲狀態設定
+    let showChineseToggle = true; // 全域中文顯示開關
+    let selectedRange = 'demo';   // 'demo' | 'r1' | 'r2' | 'r3' | 'r4' | 'r5' | 'all' | 'custom'
+    let selectedCount = 10;       // 10 | 15 | 20 | 'all'
+    let selectedQuizMode = 'listen_choice'; // 'listen_choice' | 'spelling' | 'zh_en' | 'mixed'
+    let selectedOrder = 'random'; // 'random' | 'sequential'
+    let selectedTimeLimit = 15;   // 10 | 15 | 20 | 30 (秒)
+
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let combo = 0;
+    let maxCombo = 0;
+    let isAnswered = false;
+    let isRetryMode = false;
+    let roundMissedWords = [];
+    let currentRangeLabel = '';
+
+    // 倒數計時器狀態
+    let questionTimer = null;
+    let timeLeft = 15;
+
+    // 聽音拼字狀態
+    let spellingUserLetters = [];
+    let spellingTargetWord = "";
+
+    // 語音輸入辨識狀態 (Web Speech Recognition API)
+    let speechRecognition = null;
+    let isListening = false;
+    let currentVoiceContext = 'speaking'; // 'speaking' | 'choice' | 'spelling'
+    const VOICE_EQUIVALENTS = {
+      'nineteen': ['19'],
+      'twenty': ['20'],
+      'thousand': ['1000', '1,000', 'a thousand', 'one thousand'],
+      'meter': ['metre'],
+      'centimeter': ['centimetre'],
+      'neighbor': ['neighbour'],
+      'quarter': ['1/4']
+    };
+    // 英文字母發音同音字對照表（提升語音唸字母辨識準確率）
+    const SPOKEN_LETTER_MAP = {
+      'a': 'a', 'ay': 'a', 'eh': 'a', 'hey': 'a',
+      'b': 'b', 'be': 'b', 'bee': 'b',
+      'c': 'c', 'see': 'c', 'sea': 'c',
+      'd': 'd', 'dee': 'd',
+      'e': 'e', 'ee': 'e',
+      'f': 'f', 'ef': 'f', 'eff': 'f',
+      'g': 'g', 'gee': 'g', 'ji': 'g',
+      'h': 'h', 'aitch': 'h', 'ache': 'h',
+      'i': 'i', 'eye': 'i', 'aye': 'i',
+      'j': 'j', 'jay': 'j',
+      'k': 'k', 'kay': 'k',
+      'l': 'l', 'el': 'l', 'ell': 'l',
+      'm': 'm', 'em': 'm',
+      'n': 'n', 'en': 'n',
+      'o': 'o', 'oh': 'o', 'owe': 'o',
+      'p': 'p', 'pea': 'p', 'pee': 'p',
+      'q': 'q', 'cue': 'q', 'queue': 'q', 'kew': 'q',
+      'r': 'r', 'are': 'r', 'ar': 'r',
+      's': 's', 'es': 's', 'ess': 's',
+      't': 't', 'tea': 't', 'tee': 't',
+      'u': 'u', 'you': 'u', 'yew': 'u',
+      'v': 'v', 'vee': 'v',
+      'w': 'w', 'doubleu': 'w', 'doubleyou': 'w',
+      'x': 'x', 'ex': 'x',
+      'y': 'y', 'why': 'y', 'wye': 'y',
+      'z': 'z', 'zee': 'z', 'zed': 'z'
+    };
+
+    // 單字表 Modal 狀態
+    let modalCategory = 'all';
+
+    // 音效與發音控制
+    let isMuted = false;
+    let speechRate = 1.0;
+    let audioCtx = null;
+
+    // 頁面初次載入
+    window.onload = function() {
+      // 載入中文對照 Toggle 偏好
+      const savedZh = localStorage.getItem(LOCAL_ZH_TOGGLE_KEY);
+      if (savedZh !== null) {
+        showChineseToggle = (savedZh === 'true');
+      }
+      document.getElementById('globalZhToggle').checked = showChineseToggle;
+      updateZhToggleLabel();
+
+      // 初始化選單樣式
+      setRange('demo');
+      setCount(10);
+      setQuizMode('listen_choice');
+      setOrder('random');
+      setTimeLimit(15);
+      updateWrongCountBadge();
+      updateHistoryCountBadge();
+      initConfettiCanvas();
+
+      // 支援鍵盤輸入拼字
+      window.addEventListener('keydown', handleKeyboardSpelling);
+    };
+
+    /* 
+    =================================================================
+    🌐 2. 全域中文顯示開關邏輯
+    =================================================================
+    */
+    function toggleGlobalZh(checked) {
+      showChineseToggle = checked;
+      localStorage.setItem(LOCAL_ZH_TOGGLE_KEY, checked);
+      updateZhToggleLabel();
+      playSound('click');
+
+      // 若測驗進行中，即時更新畫面
+      if (!document.getElementById('quizScreen').classList.contains('hidden')) {
+        updateQuizZhVisibility();
+      }
+    }
+
+    function updateZhToggleLabel() {
+      const label = document.getElementById('zhToggleLabel');
+      if (showChineseToggle) {
+        label.textContent = '開啟';
+        label.className = 'text-xs text-emerald-600 w-8 font-extrabold';
+      } else {
+        label.textContent = '關閉';
+        label.className = 'text-xs text-slate-400 w-8 font-bold';
+      }
+    }
+
+    function updateQuizZhVisibility() {
+      const q = currentQuestions[currentQuestionIndex];
+      if (!q) return;
+
+      const zhHint = document.getElementById('questionZhHint');
+      if (showChineseToggle && (q.type === 'listen_choice' || q.type === 'spelling')) {
+        zhHint.textContent = `(中文提示: ${q.vocabItem.zh})`;
+        zhHint.classList.remove('hidden');
+      } else if (q.type === 'speaking') {
+        zhHint.classList.add('hidden');
+        const qMainText = document.getElementById('questionMainText');
+        const qSubHint = document.getElementById('questionSubHint');
+        if (showChineseToggle) {
+          qMainText.textContent = q.vocabItem.zh;
+          qSubHint.textContent = '請看中文意思，按下方麥克風大聲唸出英文單字';
+        } else {
+          qMainText.textContent = q.vocabItem.word;
+          qSubHint.textContent = '（中文已關閉）請直接按下方麥克風大聲唸出這個英文單字';
+        }
+      } else if (q.type === 'zh_en') {
+        zhHint.classList.add('hidden');
+      } else {
+        zhHint.classList.add('hidden');
+      }
+    }
+
+    /* 
+    =================================================================
+    🔊 3. Web Speech API (語音朗讀)
+    =================================================================
+    */
+    function speak(text, lang = 'en-US') {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      utterance.rate = speechRate;
+
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
+      if (preferred) utterance.voice = preferred;
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function speakCurrentWord() {
+      if (currentQuestions[currentQuestionIndex]) {
+        speak(currentQuestions[currentQuestionIndex].vocabItem.word);
+      }
+    }
+
+    function toggleSpeechRate() {
+      if (speechRate === 1.0) {
+        speechRate = 0.75;
+        document.getElementById('speedLabel').textContent = '0.75x';
+      } else {
+        speechRate = 1.0;
+        document.getElementById('speedLabel').textContent = '1.0x';
+      }
+      playSound('click');
+    }
+
+    /* 
+    =================================================================
+    🎵 4. Web Audio API 音效合成
+    =================================================================
+    */
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function toggleSound() {
+      isMuted = !isMuted;
+      const icon = document.getElementById('soundIcon');
+      if (isMuted) {
+        icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+      } else {
+        icon.className = 'fa-solid fa-volume-high text-amber-500';
+        playSound('click');
+      }
+    }
+
+    function playSound(type, comboCount = 0) {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        if (type === 'correct') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          const baseFreq = 440 + Math.min(comboCount, 12) * 35;
+          osc.frequency.setValueAtTime(baseFreq, now);
+          osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.18);
+
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.22);
+
+        } else if (type === 'wrong') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(240, now);
+          osc.frequency.exponentialRampToValueAtTime(130, now + 0.25);
+
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
+
+        } else if (type === 'victory') {
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+
+            gain.gain.setValueAtTime(0.2, now + idx * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.09 + 0.28);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.09);
+            osc.stop(now + idx * 0.09 + 0.28);
+          });
+        } else if (type === 'click') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(650, now);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.04);
+        } else if (type === 'tick') {
+          // 最後 5 秒倒數提示音效 (秒數越少音高略高，增加緊張感)
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          const freq = comboCount <= 2 ? 980 : 780;
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.005, now + 0.09);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.09);
+        } else if (type === 'boom') {
+          // 時間到小爆炸趣味音效 (白噪音 + 低頻衝擊波)
+          const bufferSize = ctx.sampleRate * 0.45;
+          const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.14));
+          }
+          const noise = ctx.createBufferSource();
+          noise.buffer = buffer;
+
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(900, now);
+          filter.frequency.exponentialRampToValueAtTime(120, now + 0.4);
+
+          const noiseGain = ctx.createGain();
+          noiseGain.gain.setValueAtTime(0.38, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+
+          noise.connect(filter);
+          filter.connect(noiseGain);
+          noiseGain.connect(ctx.destination);
+          noise.start(now);
+
+          const subOsc = ctx.createOscillator();
+          const subGain = ctx.createGain();
+          subOsc.type = 'sawtooth';
+          subOsc.frequency.setValueAtTime(150, now);
+          subOsc.frequency.exponentialRampToValueAtTime(38, now + 0.35);
+          subGain.gain.setValueAtTime(0.3, now);
+          subGain.gain.exponentialRampToValueAtTime(0.01, now + 0.38);
+
+          subOsc.connect(subGain);
+          subGain.connect(ctx.destination);
+          subOsc.start(now);
+          subOsc.stop(now + 0.38);
+        }
+      } catch (e) {}
+    }
+
+    /* 
+    =================================================================
+    📝 5. 錯題庫管理 (localStorage)
+    =================================================================
+    */
+    function getStoredWrongIds() {
+      try {
+        const data = localStorage.getItem(LOCAL_WRONG_KEY);
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveStoredWrongIds(ids) {
+      try {
+        const unique = Array.from(new Set(ids));
+        localStorage.setItem(LOCAL_WRONG_KEY, JSON.stringify(unique));
+        updateWrongCountBadge();
+      } catch (e) {}
+    }
+
+    function addWrongWordId(id) {
+      const ids = getStoredWrongIds();
+      if (!ids.includes(id)) {
+        ids.push(id);
+        saveStoredWrongIds(ids);
+      }
+    }
+
+    function removeWrongWordId(id) {
+      let ids = getStoredWrongIds();
+      ids = ids.filter(item => item !== id);
+      saveStoredWrongIds(ids);
+    }
+
+    function updateWrongCountBadge() {
+      const wrongIds = getStoredWrongIds();
+      const badge = document.getElementById('wrongCountBadge');
+      if (badge) badge.textContent = wrongIds.length;
+    }
+
+    function clearAllWrongRecords() {
+      showCustomDialog('確定要清空所有的錯題紀錄嗎？', {
+        icon: '🗑️',
+        showCancel: true,
+        onConfirm: () => {
+          localStorage.removeItem(LOCAL_WRONG_KEY);
+          updateWrongCountBadge();
+          if (modalCategory === 'wrong') filterFlashcards();
+          showCustomDialog('已成功清空錯題紀錄！', { icon: '✅' });
+        }
+      });
+    }
+
+    /* 
+    =================================================================
+    🛠️ 5.5 通用工具函式 (洗牌 & 自訂提示視窗)
+    =================================================================
+    */
+    // Fisher-Yates 洗牌演算法，確保每次出題順序完全隨機
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function showCustomDialog(message, { icon = '💬', showCancel = false, onConfirm = null } = {}) {
+      const dialog = document.getElementById('customDialog');
+      const iconEl = document.getElementById('dialogIcon');
+      const msgEl = document.getElementById('dialogMessage');
+      const cancelBtn = document.getElementById('dialogCancelBtn');
+      const confirmBtn = document.getElementById('dialogConfirmBtn');
+
+      iconEl.textContent = icon;
+      msgEl.textContent = message;
+
+      if (showCancel) {
+        cancelBtn.classList.remove('hidden');
+      } else {
+        cancelBtn.classList.add('hidden');
+      }
+
+      confirmBtn.onclick = () => {
+        closeCustomDialog();
+        if (typeof onConfirm === 'function') onConfirm();
+      };
+
+      dialog.classList.remove('hidden');
+    }
+
+    function closeCustomDialog() {
+      document.getElementById('customDialog').classList.add('hidden');
+    }
+
+    /* 
+    =================================================================
+    🎮 6. 設定選單控制 (Range / Count / Mode)
+    =================================================================
+    */
+    function setRange(rangeKey) {
+      selectedRange = rangeKey;
+      document.querySelectorAll('.range-btn').forEach(btn => {
+        btn.classList.remove('bg-skybrand-500', 'text-white', 'border-skybrand-500', 'shadow-md');
+        btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+      });
+      const activeBtn = document.getElementById(`range-${rangeKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+        activeBtn.classList.add('bg-skybrand-500', 'text-white', 'border-skybrand-500', 'shadow-md');
+      }
+
+      // 切換顯示自訂題號輸入框
+      const customBox = document.getElementById('customRangeBox');
+      if (customBox) {
+        if (rangeKey === 'custom') {
+          customBox.classList.remove('hidden');
+          updateCustomRangePreview();
+          // 選擇自訂範圍時，預設幫使用者切換為「該區全部」，方便直接考完所選區間
+          setCount('all');
+          return;
+        } else {
+          customBox.classList.add('hidden');
+        }
+      }
+      playSound('click');
+    }
+
+    // 取得並驗證自訂題號範圍
+    function getCustomRangeValues() {
+      const startInput = document.getElementById('customStartInput');
+      const endInput = document.getElementById('customEndInput');
+      const start = parseInt(startInput ? startInput.value : '', 10);
+      const end = parseInt(endInput ? endInput.value : '', 10);
+      const isValid = !isNaN(start) && !isNaN(end) && start >= 1 && end <= VOCAB_LIST.length && start <= end;
+      return { start, end, isValid };
+    }
+
+    // 即時更新自訂範圍的題數預覽
+    function updateCustomRangePreview() {
+      const preview = document.getElementById('customRangeCountPreview');
+      if (!preview) return;
+
+      const { start, end, isValid } = getCustomRangeValues();
+      if (isValid) {
+        preview.textContent = `共 ${end - start + 1} 題`;
+        preview.className = 'text-xs font-extrabold text-skybrand-600 bg-white px-2.5 py-1 rounded-lg border border-skybrand-200';
+      } else {
+        preview.textContent = '請輸入有效範圍 (1~225)';
+        preview.className = 'text-xs font-extrabold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200';
+      }
+    }
+
+    function setCount(countVal) {
+      selectedCount = countVal;
+      document.querySelectorAll('.count-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-500', 'text-white', 'border-amber-500', 'shadow-md');
+        btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+      });
+      const activeBtn = document.getElementById(`count-${countVal}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+        activeBtn.classList.add('bg-amber-500', 'text-white', 'border-amber-500', 'shadow-md');
+      }
+      playSound('click');
+    }
+
+    function setQuizMode(modeKey) {
+      selectedQuizMode = modeKey;
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.remove('bg-purple-500', 'text-white', 'border-purple-500', 'shadow-md');
+        btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+      });
+      const activeBtn = document.getElementById(`mode-${modeKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+        activeBtn.classList.add('bg-purple-500', 'text-white', 'border-purple-500', 'shadow-md');
+      }
+      playSound('click');
+    }
+
+    function setOrder(orderKey) {
+      selectedOrder = orderKey;
+      document.querySelectorAll('.order-btn').forEach(btn => {
+        btn.classList.remove('bg-emerald-500', 'text-white', 'border-emerald-500', 'shadow-md');
+        btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+      });
+      const activeBtn = document.getElementById(`order-${orderKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+        activeBtn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-500', 'shadow-md');
+      }
+      playSound('click');
+    }
+
+    function setTimeLimit(seconds) {
+      selectedTimeLimit = seconds;
+      document.querySelectorAll('.time-btn').forEach(btn => {
+        btn.classList.remove('bg-rose-500', 'text-white', 'border-rose-500', 'shadow-md');
+        btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+      });
+      const activeBtn = document.getElementById(`time-${seconds}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+        activeBtn.classList.add('bg-rose-500', 'text-white', 'border-rose-500', 'shadow-md');
+      }
+      playSound('click');
+    }
+
+    // 取得指定範圍的單字子集
+    function getVocabSubset(rangeKey) {
+      if (rangeKey === 'demo') return VOCAB_LIST.slice(0, 10);
+      if (rangeKey === 'r1') return VOCAB_LIST.slice(0, 45);
+      if (rangeKey === 'r2') return VOCAB_LIST.slice(45, 90);
+      if (rangeKey === 'r3') return VOCAB_LIST.slice(90, 135);
+      if (rangeKey === 'r4') return VOCAB_LIST.slice(135, 180);
+      if (rangeKey === 'r5') return VOCAB_LIST.slice(180, 225);
+      if (rangeKey === 'custom') {
+        const { start, end, isValid } = getCustomRangeValues();
+        if (isValid) return VOCAB_LIST.slice(start - 1, end);
+      }
+      return VOCAB_LIST; // 'all'
+    }
+
+    /* 
+    =================================================================
+    🎲 7. 遊戲核心流程 (Quiz Logic)
+    =================================================================
+    */
+    function startQuiz(isRetry = false, customWords = null, customLabel = '') {
+      stopQuestionTimer();
+      playSound('click');
+      isRetryMode = isRetry;
+      score = 0;
+      combo = 0;
+      maxCombo = 0;
+      currentQuestionIndex = 0;
+      roundMissedWords = [];
+
+      let pool = [];
+
+      if (customWords && customWords.length > 0) {
+        pool = customWords.map(w => VOCAB_LIST.find(v => v.id === w.id) || w);
+      } else if (isRetry) {
+        const wrongIds = getStoredWrongIds();
+        if (wrongIds.length === 0) {
+          showCustomDialog('🎉 太棒了！目前沒有任何錯題紀錄喔！', { icon: '🌟' });
+          return;
+        }
+        pool = VOCAB_LIST.filter(item => wrongIds.includes(item.id));
+      } else {
+        if (selectedRange === 'custom') {
+          const { isValid } = getCustomRangeValues();
+          if (!isValid) {
+            showCustomDialog('請輸入正確的題號範圍（1 ～ 225，且起始題號不可大於結束題號）！', { icon: '⚠️' });
+            return;
+          }
+        }
+        pool = getVocabSubset(selectedRange);
+      }
+
+      // 依設定決定隨機出題或照題號依序出題
+      const orderedPool = (selectedOrder === 'random') ? shuffleArray([...pool]) : [...pool];
+
+      // 決定題目數量（若為指定歷史錯題特訓，則完整考完該筆紀錄的所有錯題）
+      let targetLength = orderedPool.length;
+      if (!(customWords && customWords.length > 0) && selectedCount !== 'all' && typeof selectedCount === 'number') {
+        targetLength = Math.min(selectedCount, orderedPool.length);
+      }
+
+      const selectedVocabs = orderedPool.slice(0, targetLength);
+      const allModes = ['listen_choice', 'spelling', 'zh_en'];
+
+      // 構建題目陣列 (若為隨機混和模式，每題隨機抽取一種題型)
+      currentQuestions = selectedVocabs.map(vocabItem => {
+        const qType = (selectedQuizMode === 'mixed')
+          ? allModes[Math.floor(Math.random() * allModes.length)]
+          : selectedQuizMode;
+        return {
+          vocabItem: vocabItem,
+          type: qType,
+          options: generateFourOptions(vocabItem, pool)
+        };
+      });
+
+      // UI 介面切換
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('resultScreen').classList.add('hidden');
+      document.getElementById('quizScreen').classList.remove('hidden');
+
+      // 更新頂部範圍標籤
+      const rangeBadge = document.getElementById('rangeBadgeDisplay');
+      if (customLabel) {
+        currentRangeLabel = customLabel;
+      } else if (isRetry) {
+        currentRangeLabel = '🔥 錯題特訓';
+      } else if (selectedRange === 'custom') {
+        const { start, end } = getCustomRangeValues();
+        currentRangeLabel = `🎯 自訂(${start}-${end})`;
+      } else {
+        const rangeNames = {
+          'demo': '🌱 示範(01-10)', 'r1': '第 1 區(01-45)', 'r2': '第 2 區(46-90)',
+          'r3': '第 3 區(91-135)', 'r4': '第 4 區(136-180)', 'r5': '第 5 區(181-225)',
+          'all': '👑 全部(01-225)'
+        };
+        currentRangeLabel = rangeNames[selectedRange] || '一般測驗';
+      }
+      rangeBadge.textContent = currentRangeLabel;
+
+      renderQuestion();
+    }
+
+    function generateFourOptions(targetVocab, currentPool) {
+      // 優先從當前範圍抽干擾選項，不足再從總庫補
+      let distractorPool = currentPool.filter(v => v.id !== targetVocab.id);
+      if (distractorPool.length < 3) {
+        distractorPool = VOCAB_LIST.filter(v => v.id !== targetVocab.id);
+      }
+      const shuffledDistractors = shuffleArray([...distractorPool]).slice(0, 3);
+      return shuffleArray([targetVocab, ...shuffledDistractors]);
+    }
+
+    function renderQuestion() {
+      stopQuestionTimer();
+      stopVoiceRecognition();
+      isAnswered = false;
+      const q = currentQuestions[currentQuestionIndex];
+      const item = q.vocabItem;
+
+      // 清除上一題可能殘留的爆炸動畫
+      const explosionOverlay = document.getElementById('explosionOverlay');
+      if (explosionOverlay) {
+        explosionOverlay.classList.add('hidden');
+        explosionOverlay.innerHTML = '';
+      }
+
+      // 更新進度條
+      document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
+      document.getElementById('totalQuestionNum').textContent = currentQuestions.length;
+      document.getElementById('progressBar').style.width = `${((currentQuestionIndex + 1) / currentQuestions.length) * 100}%`;
+
+      // 隱藏反饋與下一題按鈕
+      document.getElementById('feedbackBox').className = 'hidden rounded-2xl p-4 transition-all mb-3 text-center';
+      document.getElementById('nextBtn').classList.add('hidden');
+      document.getElementById('nextBtn').classList.remove('flex');
+
+      updateComboUI();
+      updateQuizZhVisibility();
+
+      const typeBadge = document.getElementById('questionTypeBadge');
+      const qMainText = document.getElementById('questionMainText');
+      const qSubHint = document.getElementById('questionSubHint');
+
+      const optionsGrid = document.getElementById('optionsGrid');
+      const choiceVoiceBar = document.getElementById('choiceVoiceBar');
+      const spellingContainer = document.getElementById('spellingContainer');
+      const speakingContainer = document.getElementById('speakingContainer');
+
+      // 重置語音提示文字
+      const choiceHint = document.getElementById('choiceVoiceHint');
+      if (choiceHint) choiceHint.textContent = '';
+      const spellingHint = document.getElementById('spellingVoiceHint');
+      if (spellingHint) spellingHint.textContent = '';
+      const transcriptBox = document.getElementById('voiceTranscriptBox');
+      if (transcriptBox) transcriptBox.classList.add('hidden');
+      updateVoiceUI(false);
+
+      if (q.type === 'listen_choice') {
+        typeBadge.textContent = '🎧 聽音選字';
+        qMainText.innerHTML = `<span class="text-skybrand-600 animate-pulse"><i class="fa-solid fa-volume-high"></i> 聽英語發音...</span>`;
+        qSubHint.textContent = '請聽英文發音，點擊選出或用說的唸出英文單字';
+
+        optionsGrid.classList.remove('hidden');
+        choiceVoiceBar.classList.remove('hidden');
+        spellingContainer.classList.add('hidden');
+        speakingContainer.classList.add('hidden');
+
+        renderMultipleChoiceOptions(q, 'word');
+        speak(item.word);
+
+      } else if (q.type === 'zh_en') {
+        typeBadge.textContent = '👁️ 看中選英';
+        qMainText.textContent = item.zh;
+        qSubHint.textContent = '根據中文意思，點擊選出或用說的唸出英文單字';
+
+        optionsGrid.classList.remove('hidden');
+        choiceVoiceBar.classList.remove('hidden');
+        spellingContainer.classList.add('hidden');
+        speakingContainer.classList.add('hidden');
+
+        renderMultipleChoiceOptions(q, 'word');
+        speak(item.word);
+
+      } else if (q.type === 'spelling') {
+        typeBadge.textContent = '🔤 聽音拼字';
+        qMainText.innerHTML = `<span class="text-purple-600"><i class="fa-solid fa-spell-check"></i> 拼出英文單字</span>`;
+        qSubHint.textContent = '聽英文發音，點擊字母方塊或按麥克風唸出英文字母拼字';
+
+        optionsGrid.classList.add('hidden');
+        choiceVoiceBar.classList.add('hidden');
+        spellingContainer.classList.remove('hidden');
+        speakingContainer.classList.add('hidden');
+
+        initSpellingChallenge(item.word);
+        speak(item.word);
+
+      } else if (q.type === 'speaking') {
+        typeBadge.textContent = '🎤 口說唸字';
+        if (showChineseToggle) {
+          qMainText.textContent = item.zh;
+          qSubHint.textContent = '請看中文意思，按下方麥克風大聲唸出英文單字';
+        } else {
+          qMainText.textContent = item.word;
+          qSubHint.textContent = '（中文已關閉）請直接按下方麥克風大聲唸出這個英文單字';
+        }
+
+        optionsGrid.classList.add('hidden');
+        choiceVoiceBar.classList.add('hidden');
+        spellingContainer.classList.add('hidden');
+        speakingContainer.classList.remove('hidden');
+      }
+
+      // 啟動本題倒數計時器
+      startQuestionTimer();
+    }
+
+    /* 
+    -----------------------------------------------------------------
+    ⏱️ 倒數計時器與小爆炸特效邏輯
+    -----------------------------------------------------------------
+    */
+    function startQuestionTimer() {
+      stopQuestionTimer();
+      timeLeft = selectedTimeLimit;
+      updateTimerUI();
+
+      questionTimer = setInterval(() => {
+        if (isAnswered) {
+          stopQuestionTimer();
+          return;
+        }
+        timeLeft--;
+        updateTimerUI();
+
+        if (timeLeft > 0 && timeLeft <= 5) {
+          playSound('tick', timeLeft);
+        } else if (timeLeft <= 0) {
+          stopQuestionTimer();
+          handleTimeOut();
+        }
+      }, 1000);
+    }
+
+    function stopQuestionTimer() {
+      if (questionTimer) {
+        clearInterval(questionTimer);
+        questionTimer = null;
+      }
+    }
+
+    function updateTimerUI() {
+      const badge = document.getElementById('timerBadge');
+      const text = document.getElementById('timerText');
+      if (!badge || !text) return;
+
+      text.textContent = `${Math.max(0, timeLeft)}s`;
+
+      if (timeLeft <= 5) {
+        badge.className = 'flex items-center gap-1.5 bg-rose-100 text-rose-600 border-2 border-rose-400 font-black px-3 py-1 rounded-full text-xs md:text-sm animate-pulse shadow-sm';
+      } else {
+        badge.className = 'flex items-center gap-1.5 bg-skybrand-50 text-skybrand-700 border-2 border-skybrand-200 font-black px-3 py-1 rounded-full text-xs md:text-sm transition-all';
+      }
+    }
+
+    function triggerExplosionAnimation() {
+      const overlay = document.getElementById('explosionOverlay');
+      const card = document.getElementById('questionCard');
+      if (!overlay) return;
+
+      // 產生 10 個向外飛散的火花粒子
+      const sparks = [];
+      const sparkIcons = ['✨', '🔥', '⭐', '💨', '⚡'];
+      for (let i = 0; i < 10; i++) {
+        const angle = (Math.PI * 2 * i) / 10;
+        const dist = 65 + Math.random() * 45;
+        const tx = Math.round(Math.cos(angle) * dist);
+        const ty = Math.round(Math.sin(angle) * dist);
+        const icon = sparkIcons[i % sparkIcons.length];
+        sparks.push(`<span class="boom-spark absolute text-xl md:text-2xl" style="--tx:${tx}px;--ty:${ty}px;">${icon}</span>`);
+      }
+
+      overlay.innerHTML = `
+        <div class="boom-ring absolute w-24 h-24 rounded-full border-orange-400"></div>
+        <div class="boom-emoji text-7xl md:text-8xl drop-shadow-lg select-none">💥</div>
+        ${sparks.join('')}
+      `;
+      overlay.classList.remove('hidden');
+
+      if (card) {
+        card.classList.remove('animate-shake');
+        void card.offsetWidth;
+        card.classList.add('animate-shake');
+      }
+
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+        overlay.innerHTML = '';
+        if (card) card.classList.remove('animate-shake');
+      }, 1000);
+    }
+
+    function handleTimeOut() {
+      if (isAnswered) return;
+      isAnswered = true;
+      stopVoiceRecognition();
+
+      const q = currentQuestions[currentQuestionIndex];
+      const correctOpt = q.vocabItem;
+
+      // 顯示正確答案高亮 (選擇題模式)
+      if (q.type === 'listen_choice' || q.type === 'zh_en') {
+        document.querySelectorAll('.option-btn').forEach(btn => {
+          if (btn.textContent.includes(correctOpt.word)) {
+            btn.classList.remove('bg-white', 'border-slate-200');
+            btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
+          }
+        });
+      } else if (q.type === 'spelling') {
+        renderSpellingTiles();
+      }
+
+      triggerExplosionAnimation();
+      handleAnswerResult(false, correctOpt, true);
+    }
+
+    /* 
+    -----------------------------------------------------------------
+    4 選 1 渲染邏輯
+    -----------------------------------------------------------------
+    */
+    function renderMultipleChoiceOptions(q, displayField) {
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `option-btn btn-press bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold p-4 rounded-2xl shadow-sm flex items-center justify-between text-base md:text-lg transition-all`;
+        
+        let textToShow = opt.word;
+        if (showChineseToggle) {
+          textToShow += ` <span class="text-xs font-normal text-slate-500">(${opt.zh})</span>`;
+        }
+
+        btn.innerHTML = `
+          <span class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-black">${idx + 1}</span>
+            <span>${textToShow}</span>
+          </span>
+          <i class="fa-solid fa-circle-check text-emerald-500 opacity-0 text-xl check-icon"></i>
+        `;
+
+        btn.onclick = () => checkChoiceAnswer(opt, btn);
+        grid.appendChild(btn);
+      });
+    }
+
+    function checkChoiceAnswer(selectedOpt, btnElement) {
+      if (isAnswered) return;
+      isAnswered = true;
+      stopQuestionTimer();
+      stopVoiceRecognition();
+
+      const q = currentQuestions[currentQuestionIndex];
+      const correctOpt = q.vocabItem;
+      const isCorrect = (selectedOpt.id === correctOpt.id);
+
+      handleAnswerResult(isCorrect, correctOpt);
+
+      const allBtns = document.querySelectorAll('.option-btn');
+      if (isCorrect) {
+        btnElement.classList.remove('bg-white', 'border-slate-200');
+        btnElement.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
+        btnElement.querySelector('.check-icon').classList.remove('opacity-0');
+      } else {
+        btnElement.classList.remove('bg-white', 'border-slate-200');
+        btnElement.classList.add('bg-rose-50', 'border-rose-400', 'text-rose-700', 'animate-shake');
+
+        allBtns.forEach(btn => {
+          if (btn.textContent.includes(correctOpt.word)) {
+            btn.classList.remove('bg-white', 'border-slate-200');
+            btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
+          }
+        });
+      }
+    }
+
+    /* 
+    -----------------------------------------------------------------
+    🔤 聽音拼字 (Spelling Challenge) 邏輯
+    -----------------------------------------------------------------
+    */
+    function initSpellingChallenge(word) {
+      spellingTargetWord = word.toLowerCase();
+      spellingUserLetters = [];
+
+      // 生成可選字母 (目標字母 + 隨機干擾字母)
+      const targetLetters = spellingTargetWord.split('');
+      const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+      const extraCount = Math.max(2, 8 - targetLetters.length);
+      const extraLetters = [];
+      for (let i = 0; i < extraCount; i++) {
+        extraLetters.push(alphabet[Math.floor(Math.random() * alphabet.length)]);
+      }
+
+      const allTiles = shuffleArray([...targetLetters, ...extraLetters]).map((char, index) => {
+        return { id: index, char: char, used: false };
+      });
+
+      renderSpellingSlots();
+      renderSpellingTiles(allTiles);
+    }
+
+    let currentTileObjects = [];
+
+    function renderSpellingTiles(tiles) {
+      if (tiles) currentTileObjects = tiles;
+      const container = document.getElementById('spellingTiles');
+      container.innerHTML = '';
+
+      currentTileObjects.forEach(tile => {
+        const btn = document.createElement('button');
+        btn.className = `btn-press w-10 h-11 md:w-12 md:h-13 rounded-xl font-black text-lg md:text-xl border-2 flex items-center justify-center transition-all ${
+          tile.used 
+            ? 'bg-slate-200 text-slate-400 border-slate-300 opacity-40 cursor-not-allowed scale-95' 
+            : 'bg-white hover:bg-purple-50 border-purple-300 text-purple-700 shadow-sm'
+        }`;
+        btn.textContent = tile.char;
+        btn.disabled = tile.used || isAnswered;
+        btn.onclick = () => selectSpellingTile(tile);
+        container.appendChild(btn);
+      });
+    }
+
+    function renderSpellingSlots() {
+      const slotsContainer = document.getElementById('spellingSlots');
+      slotsContainer.innerHTML = '';
+
+      const targetLen = spellingTargetWord.length;
+
+      for (let i = 0; i < targetLen; i++) {
+        const slot = document.createElement('div');
+        const userChar = spellingUserLetters[i];
+
+        slot.className = `w-10 h-11 md:w-12 md:h-13 rounded-xl border-2 font-black text-xl flex items-center justify-center transition-all ${
+          userChar 
+            ? 'bg-purple-600 text-white border-purple-600 shadow-md animate-pop' 
+            : 'bg-white border-dashed border-slate-300 text-slate-400'
+        }`;
+        slot.textContent = userChar ? userChar.char : '';
+        slotsContainer.appendChild(slot);
+      }
+    }
+
+    function selectSpellingTile(tile) {
+      if (isAnswered || spellingUserLetters.length >= spellingTargetWord.length) return;
+      
+      playSound('click');
+      tile.used = true;
+      spellingUserLetters.push(tile);
+
+      renderSpellingSlots();
+      renderSpellingTiles();
+
+      // 當填滿時自動送出比對
+      if (spellingUserLetters.length === spellingTargetWord.length) {
+        checkSpellingResult();
+      }
+    }
+
+    function backspaceSpelling() {
+      if (isAnswered || spellingUserLetters.length === 0) return;
+      playSound('click');
+
+      const popped = spellingUserLetters.pop();
+      popped.used = false;
+
+      renderSpellingSlots();
+      renderSpellingTiles();
+    }
+
+    function clearSpelling() {
+      if (isAnswered || spellingUserLetters.length === 0) return;
+      playSound('click');
+
+      spellingUserLetters.forEach(tile => tile.used = false);
+      spellingUserLetters = [];
+
+      renderSpellingSlots();
+      renderSpellingTiles();
+    }
+
+    function giveSpellingHint() {
+      if (isAnswered) return;
+
+      // 找出第一個尚未填對的位置
+      const currentInput = spellingUserLetters.map(t => t.char).join('');
+      let firstWrongIndex = -1;
+
+      for (let i = 0; i < spellingTargetWord.length; i++) {
+        if (!spellingUserLetters[i] || spellingUserLetters[i].char !== spellingTargetWord[i]) {
+          firstWrongIndex = i;
+          break;
+        }
+      }
+
+      if (firstWrongIndex === -1) return;
+
+      playSound('click');
+
+      // 重置此位置之後的輸入
+      while (spellingUserLetters.length > firstWrongIndex) {
+        const popped = spellingUserLetters.pop();
+        popped.used = false;
+      }
+
+      // 找出正確字母的可用 tile
+      const targetChar = spellingTargetWord[firstWrongIndex];
+      const correctTile = currentTileObjects.find(t => !t.used && t.char === targetChar);
+
+      if (correctTile) {
+        correctTile.used = true;
+        spellingUserLetters.push(correctTile);
+      }
+
+      renderSpellingSlots();
+      renderSpellingTiles();
+
+      if (spellingUserLetters.length === spellingTargetWord.length) {
+        checkSpellingResult();
+      }
+    }
+
+    function handleKeyboardSpelling(e) {
+      if (document.getElementById('quizScreen').classList.contains('hidden')) return;
+      if (!document.getElementById('customDialog').classList.contains('hidden')) return;
+
+      // 答完題後按 Enter 進入下一題（適用所有題型）
+      if (e.key === 'Enter' && isAnswered) {
+        const nextBtn = document.getElementById('nextBtn');
+        if (nextBtn && !nextBtn.classList.contains('hidden')) {
+          e.preventDefault();
+          nextQuestion();
+        }
+        return;
+      }
+
+      const q = currentQuestions[currentQuestionIndex];
+      if (!q || isAnswered) return;
+
+      // 口說或拼字模式下按空白鍵快速開啟/關閉麥克風
+      if ((q.type === 'speaking' || q.type === 'spelling') && e.code === 'Space') {
+        e.preventDefault();
+        toggleVoiceInput(q.type);
+        return;
+      }
+
+      if (q.type !== 'spelling') return;
+
+      const key = e.key.toLowerCase();
+      if (key === 'backspace') {
+        backspaceSpelling();
+      } else if (key.length === 1 && key >= 'a' && key <= 'z') {
+        const unusedTile = currentTileObjects.find(t => !t.used && t.char === key);
+        if (unusedTile) {
+          selectSpellingTile(unusedTile);
+        }
+      }
+    }
+
+    /* 
+    -----------------------------------------------------------------
+    🎤 語音輸入辨識 (Web Speech Recognition API) 邏輯
+    -----------------------------------------------------------------
+    */
+    function isSpeechRecognitionSupported() {
+      return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    }
+
+    function normalizeSpokenText(text) {
+      return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+    }
+
+    function isVoiceMatch(transcripts, targetWord) {
+      const target = normalizeSpokenText(targetWord);
+      const validSet = new Set([target, ...(VOICE_EQUIVALENTS[target] || [])]);
+
+      return transcripts.some(raw => {
+        const cleaned = normalizeSpokenText(raw);
+        if (!cleaned) return false;
+        if (validSet.has(cleaned)) return true;
+        // 支援句子中包含該單字（例如孩子說 "it is apple"）
+        const words = cleaned.split(/\s+/);
+        return words.some(w => validSet.has(w));
+      });
+    }
+
+    // 將語音辨識結果解析為英文字母陣列（支援單唸字母、同音字及 "double p" 唸法）
+    function parseSpokenLetters(rawText) {
+      const text = rawText.toLowerCase()
+        .replace(/[-.,!?;:'"]/g, ' ')
+        .replace(/\bdouble\s+(u|you)\b/g, ' w ')
+        .trim();
+      if (!text) return [];
+
+      const tokens = text.split(/\s+/);
+      const letters = [];
+
+      for (let i = 0; i < tokens.length; i++) {
+        const tok = tokens[i];
+        // 支援 "double + 字母"（例如拼 apple 時唸 double p）
+        if (tok === 'double' && i + 1 < tokens.length) {
+          const nextLetter = SPOKEN_LETTER_MAP[tokens[i + 1]];
+          if (nextLetter) {
+            letters.push(nextLetter, nextLetter);
+            i++;
+            continue;
+          }
+        }
+        if (SPOKEN_LETTER_MAP[tok]) {
+          letters.push(SPOKEN_LETTER_MAP[tok]);
+        } else if (/^[a-z]{2,4}$/.test(tok) && tok.split('').every(ch => currentTileObjects.some(t => !t.used && t.char === ch))) {
+          // 若語音辨識將連唸的字母黏在一起（例如 "pp"、"ap"），拆分為個別字母
+          letters.push(...tok.split(''));
+        }
+      }
+      return letters;
+    }
+
+    // 將解析出的英文字母依序填入拼字方塊中
+    function applySpokenSpellingLetters(transcripts) {
+      let bestLetters = [];
+      let bestScore = -1;
+
+      // 從多個候選辨識結果中挑選最符合目前可用字母方塊的一組
+      transcripts.forEach(raw => {
+        const parsed = parseSpokenLetters(raw);
+        if (parsed.length === 0) return;
+        const availableCount = {};
+        currentTileObjects.forEach(t => {
+          if (!t.used) availableCount[t.char] = (availableCount[t.char] || 0) + 1;
+        });
+        let matched = 0;
+        parsed.forEach(ch => {
+          if (availableCount[ch] > 0) {
+            matched++;
+            availableCount[ch]--;
+          }
+        });
+        if (matched > bestScore) {
+          bestScore = matched;
+          bestLetters = parsed;
+        }
+      });
+
+      const hint = document.getElementById('spellingVoiceHint');
+      if (bestLetters.length === 0) {
+        if (hint) hint.textContent = `聽到「${transcripts[0] || ''}」，請一個一個唸出英文字母喔！`;
+        return;
+      }
+
+      const entered = [];
+      const missing = [];
+      for (const ch of bestLetters) {
+        if (isAnswered || spellingUserLetters.length >= spellingTargetWord.length) break;
+        const unusedTile = currentTileObjects.find(t => !t.used && t.char === ch);
+        if (unusedTile) {
+          selectSpellingTile(unusedTile);
+          entered.push(ch.toUpperCase());
+        } else {
+          missing.push(ch.toUpperCase());
+        }
+      }
+
+      if (hint && !isAnswered) {
+        if (entered.length > 0 && missing.length === 0) {
+          hint.textContent = `✅ 已填入字母：${entered.join(' ')}`;
+        } else if (entered.length > 0 && missing.length > 0) {
+          hint.textContent = `✅ 已填入 ${entered.join(' ')}（方塊中無 ${missing.join(' ')}）`;
+        } else {
+          hint.textContent = `⚠️ 聽到「${missing.join(' ')}」，但下方字母方塊沒有這個字母喔！`;
+        }
+      }
+    }
+
+    function toggleVoiceInput(context = 'speaking') {
+      if (isAnswered) return;
+
+      if (!isSpeechRecognitionSupported()) {
+        showCustomDialog('抱歉，您目前的瀏覽器不支援語音辨識功能，建議使用 Chrome、Edge 或 Safari 瀏覽器開啟！', { icon: '🎙️' });
+        return;
+      }
+
+      if (isListening) {
+        stopVoiceRecognition();
+        return;
+      }
+
+      currentVoiceContext = context;
+      // 啟動收音前先停止朗讀，避免麥克風收到系統聲音
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        speechRecognition = new SpeechRecognition();
+        speechRecognition.lang = 'en-US';
+        speechRecognition.interimResults = true;
+        speechRecognition.maxAlternatives = 5;
+        // 聽音拼字支援連續收音，方便孩子一個字母一個字母慢慢唸
+        speechRecognition.continuous = (context === 'spelling');
+
+        speechRecognition.onstart = () => {
+          isListening = true;
+          const startMsg = context === 'spelling'
+            ? '🔴 正在聆聽字母... 請依序唸出英文字母（例如 A、P、P、L、E）'
+            : '🔴 正在聆聽中... 請大聲唸出英文單字！';
+          updateVoiceUI(true, startMsg);
+        };
+
+        speechRecognition.onresult = (event) => {
+          if (isAnswered) return;
+
+          if (currentVoiceContext === 'spelling') {
+            const hint = document.getElementById('spellingVoiceHint');
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const res = event.results[i];
+              const transcripts = [];
+              for (let j = 0; j < res.length; j++) {
+                transcripts.push(res[j].transcript);
+              }
+              if (res.isFinal) {
+                applySpokenSpellingLetters(transcripts);
+              } else if (hint) {
+                hint.textContent = `聆聽中：「${transcripts[0] || ''}」...`;
+              }
+            }
+            return;
+          }
+
+          const result = event.results[event.results.length - 1];
+          const transcripts = [];
+          for (let i = 0; i < result.length; i++) {
+            transcripts.push(result[i].transcript);
+          }
+          const primaryText = transcripts[0] || '';
+
+          if (currentVoiceContext === 'speaking') {
+            const box = document.getElementById('voiceTranscriptBox');
+            const textEl = document.getElementById('voiceTranscriptText');
+            if (box && textEl) {
+              box.classList.remove('hidden');
+              textEl.textContent = primaryText;
+            }
+          } else {
+            const hint = document.getElementById('choiceVoiceHint');
+            if (hint) hint.textContent = `聽到：「${primaryText}」`;
+          }
+
+          const q = currentQuestions[currentQuestionIndex];
+          if (!q) return;
+
+          if (currentVoiceContext === 'speaking') {
+            // 只要辨識出正確單字就立即過關
+            if (isVoiceMatch(transcripts, q.vocabItem.word)) {
+              stopVoiceRecognition();
+              isAnswered = true;
+              stopQuestionTimer();
+              handleAnswerResult(true, q.vocabItem);
+            } else if (result.isFinal) {
+              // 辨識結束但未符合，允許在時間內再試一次
+              updateVoiceUI(false, `聽到「${primaryText}」，再按一次麥克風試試看！`);
+              playSound('click');
+            }
+          } else if (currentVoiceContext === 'choice') {
+            // 選擇題模式：比對 4 個選項中的單字
+            const matchedOpt = q.options.find(opt => isVoiceMatch(transcripts, opt.word));
+            if (matchedOpt) {
+              stopVoiceRecognition();
+              const allBtns = document.querySelectorAll('.option-btn');
+              const matchedBtn = Array.from(allBtns).find(btn => btn.textContent.includes(matchedOpt.word));
+              if (matchedBtn) {
+                checkChoiceAnswer(matchedOpt, matchedBtn);
+              }
+            } else if (result.isFinal) {
+              updateVoiceUI(false);
+              const hint = document.getElementById('choiceVoiceHint');
+              if (hint) hint.textContent = `聽到「${primaryText}」，沒有符合的選項，請再試一次！`;
+            }
+          }
+        };
+
+        speechRecognition.onerror = (event) => {
+          isListening = false;
+          let errMsg = '語音辨識發生錯誤，請再試一次';
+          if (event.error === 'not-allowed') {
+            errMsg = '請允許瀏覽器使用麥克風權限才能語音答題喔！';
+          } else if (event.error === 'no-speech') {
+            errMsg = '沒有聽到聲音，請靠近麥克風再試一次！';
+          } else if (event.error === 'audio-capture') {
+            errMsg = '找不到麥克風裝置，請檢查麥克風設定。';
+          }
+          updateVoiceUI(false, errMsg);
+        };
+
+        speechRecognition.onend = () => {
+          isListening = false;
+          if (!isAnswered) {
+            updateVoiceUI(false);
+          }
+        };
+
+        speechRecognition.start();
+      } catch (e) {
+        isListening = false;
+        updateVoiceUI(false, '無法啟動麥克風，請確認權限設定。');
+      }
+    }
+
+    function stopVoiceRecognition() {
+      isListening = false;
+      if (speechRecognition) {
+        try {
+          speechRecognition.onresult = null;
+          speechRecognition.onerror = null;
+          speechRecognition.onend = null;
+          speechRecognition.abort();
+        } catch (e) {}
+        speechRecognition = null;
+      }
+      updateVoiceUI(false);
+    }
+
+    function updateVoiceUI(listening, customStatus = null) {
+      // 更新口說專屬模式 UI
+      const speakBtn = document.getElementById('speakAnswerBtn');
+      const speakIcon = document.getElementById('speakAnswerIcon');
+      const statusText = document.getElementById('voiceStatusText');
+      if (speakBtn && speakIcon && statusText) {
+        if (listening && currentVoiceContext === 'speaking') {
+          speakBtn.classList.add('animate-pulse', 'ring-4', 'ring-rose-300', 'scale-105');
+          speakIcon.className = 'fa-solid fa-stop';
+        } else {
+          speakBtn.classList.remove('animate-pulse', 'ring-4', 'ring-rose-300', 'scale-105');
+          speakIcon.className = 'fa-solid fa-microphone';
+        }
+        if (customStatus !== null) {
+          statusText.textContent = customStatus;
+        } else if (!listening && !isAnswered) {
+          statusText.textContent = '點擊麥克風或按空白鍵 (Space) 唸出英文單字';
+        }
+      }
+
+      // 更新選擇題語音按鈕 UI
+      const choiceBtn = document.getElementById('choiceMicBtn');
+      const choiceIcon = document.getElementById('choiceMicIcon');
+      const choiceLabel = document.getElementById('choiceMicLabel');
+      const choiceHint = document.getElementById('choiceVoiceHint');
+      if (choiceBtn && choiceIcon && choiceLabel) {
+        if (listening && currentVoiceContext === 'choice') {
+          choiceBtn.className = 'btn-press bg-rose-500 text-white border-2 border-rose-600 font-bold px-4 py-2 rounded-2xl text-xs md:text-sm flex items-center gap-2 shadow-md animate-pulse transition-all';
+          choiceIcon.className = 'fa-solid fa-microphone-lines text-white';
+          choiceLabel.textContent = '聆聽中... 請唸出英文單字（點擊停止）';
+        } else {
+          choiceBtn.className = 'btn-press bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-2 border-indigo-200 font-bold px-4 py-2 rounded-2xl text-xs md:text-sm flex items-center gap-2 shadow-sm transition-all';
+          choiceIcon.className = 'fa-solid fa-microphone text-indigo-500';
+          choiceLabel.textContent = '🎤 用說的答題（唸出英文單字）';
+        }
+        if (customStatus !== null && currentVoiceContext === 'choice' && choiceHint) {
+          choiceHint.textContent = customStatus;
+        }
+      }
+
+      // 更新聽音拼字語音按鈕 UI
+      const spellingBtn = document.getElementById('spellingMicBtn');
+      const spellingIcon = document.getElementById('spellingMicIcon');
+      const spellingLabel = document.getElementById('spellingMicLabel');
+      const spellingHint = document.getElementById('spellingVoiceHint');
+      if (spellingBtn && spellingIcon && spellingLabel) {
+        if (listening && currentVoiceContext === 'spelling') {
+          spellingBtn.className = 'btn-press bg-rose-500 text-white border-2 border-rose-600 font-bold px-4 py-2 rounded-2xl text-xs md:text-sm flex items-center gap-2 shadow-md animate-pulse transition-all';
+          spellingIcon.className = 'fa-solid fa-microphone-lines text-white';
+          spellingLabel.textContent = '聆聽字母中... 請唸出英文字母（點擊停止）';
+        } else {
+          spellingBtn.className = 'btn-press bg-purple-50 hover:bg-purple-100 text-purple-700 border-2 border-purple-200 font-bold px-4 py-2 rounded-2xl text-xs md:text-sm flex items-center gap-2 shadow-sm transition-all';
+          spellingIcon.className = 'fa-solid fa-microphone text-purple-500';
+          spellingLabel.textContent = '🎤 語音唸字母拼字（如唸 A-P-P-L-E）';
+        }
+        if (customStatus !== null && currentVoiceContext === 'spelling' && spellingHint) {
+          spellingHint.textContent = customStatus;
+        }
+      }
+    }
+
+    function skipSpeakingQuestion() {
+      if (isAnswered) return;
+      isAnswered = true;
+      stopQuestionTimer();
+      stopVoiceRecognition();
+      const q = currentQuestions[currentQuestionIndex];
+      handleAnswerResult(false, q.vocabItem, false);
+    }
+
+    function checkSpellingResult() {
+      if (isAnswered) return;
+      isAnswered = true;
+      stopQuestionTimer();
+      stopVoiceRecognition();
+
+      const userWord = spellingUserLetters.map(t => t.char).join('');
+      const isCorrect = (userWord === spellingTargetWord);
+      const q = currentQuestions[currentQuestionIndex];
+
+      handleAnswerResult(isCorrect, q.vocabItem);
+    }
+
+    /* 
+    -----------------------------------------------------------------
+    統一通用答題結果處理 (通用于 Multiple Choice & Spelling)
+    -----------------------------------------------------------------
+    */
+    function handleAnswerResult(isCorrect, vocabItem, isTimeout = false) {
+      const feedbackBox = document.getElementById('feedbackBox');
+      const feedbackTitle = document.getElementById('feedbackTitle');
+      const feedbackDetail = document.getElementById('feedbackDetail');
+
+      if (isCorrect) {
+        score++;
+        combo++;
+        if (combo > maxCombo) maxCombo = combo;
+
+        playSound('correct', combo);
+        if (combo >= 3) triggerConfetti(20);
+
+        feedbackBox.className = 'rounded-2xl p-4 bg-emerald-100/90 border-2 border-emerald-300 text-emerald-950 block animate-pop mb-3 text-center';
+        feedbackTitle.innerHTML = `🎉 太棒了！答對了！ ${combo > 1 ? `<span class="text-orange-600 font-black">(${combo} 連擊!)</span>` : ''}`;
+        feedbackDetail.textContent = `${vocabItem.word} 意思為：「${vocabItem.zh}」`;
+
+        if (isRetryMode) {
+          removeWrongWordId(vocabItem.id);
+        }
+      } else {
+        combo = 0;
+        playSound(isTimeout ? 'boom' : 'wrong');
+
+        addWrongWordId(vocabItem.id);
+        if (!roundMissedWords.some(w => w.id === vocabItem.id)) {
+          roundMissedWords.push(vocabItem);
+        }
+
+        feedbackBox.className = 'rounded-2xl p-4 bg-rose-100/90 border-2 border-rose-300 text-rose-950 block animate-pop mb-3 text-center';
+        feedbackTitle.innerHTML = isTimeout
+          ? `💥 時間到！碰！正確答案是：<strong class="text-rose-700">${vocabItem.word}</strong>`
+          : `😅 再接再厲！正確答案是：<strong class="text-rose-700">${vocabItem.word}</strong>`;
+        feedbackDetail.textContent = `中文意思是：「${vocabItem.zh}」`;
+
+        setTimeout(() => speak(vocabItem.word), isTimeout ? 600 : 400);
+      }
+
+      updateComboUI();
+
+      const nextBtn = document.getElementById('nextBtn');
+      nextBtn.classList.remove('hidden');
+      nextBtn.classList.add('flex');
+    }
+
+    function updateComboUI() {
+      const container = document.getElementById('comboContainer');
+      const text = document.getElementById('comboText');
+      if (combo >= 2) {
+        text.textContent = `${combo} 連擊！`;
+        container.classList.remove('opacity-0');
+      } else {
+        container.classList.add('opacity-0');
+      }
+    }
+
+    function nextQuestion() {
+      playSound('click');
+      currentQuestionIndex++;
+      if (currentQuestionIndex < currentQuestions.length) {
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    /* 
+    =================================================================
+    🏆 8. 結算畫面 (Result Screen)
+    =================================================================
+    */
+    function showResults() {
+      stopQuestionTimer();
+      stopVoiceRecognition();
+      playSound('victory');
+      triggerConfetti(70);
+
+      // 儲存本次測驗與錯題歷史紀錄 (含日期與時間)
+      saveTestHistory();
+
+      document.getElementById('quizScreen').classList.add('hidden');
+      document.getElementById('resultScreen').classList.remove('hidden');
+
+      const total = currentQuestions.length;
+      const accuracy = Math.round((score / total) * 100);
+
+      document.getElementById('finalScore').textContent = `${score} / ${total}`;
+      document.getElementById('finalMaxCombo').textContent = maxCombo;
+      document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+
+      const starContainer = document.getElementById('starContainer');
+      const resultEmoji = document.getElementById('resultEmoji');
+      const resultTitle = document.getElementById('resultTitle');
+
+      if (accuracy === 100) {
+        starContainer.innerHTML = '⭐ ⭐ ⭐';
+        resultEmoji.textContent = '🏆';
+        resultTitle.textContent = '太強了！滿分完美闖關！';
+      } else if (accuracy >= 70) {
+        starContainer.innerHTML = '⭐ ⭐ ⚪';
+        resultEmoji.textContent = '🌟';
+        resultTitle.textContent = '表現非常優秀！繼續保持！';
+      } else {
+        starContainer.innerHTML = '⭐ ⚪ ⚪';
+        resultEmoji.textContent = '💪';
+        resultTitle.textContent = '別氣餒！多利用錯題特訓加強！';
+      }
+
+      // 檢視本輪錯題
+      const wrongSection = document.getElementById('sessionWrongSection');
+      const wrongList = document.getElementById('sessionWrongList');
+      const retryWrongBtn = document.getElementById('retryWrongBtn');
+
+      if (roundMissedWords.length > 0) {
+        wrongSection.classList.remove('hidden');
+        retryWrongBtn.classList.remove('hidden');
+        retryWrongBtn.classList.add('flex');
+        wrongList.innerHTML = '';
+
+        roundMissedWords.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between shadow-sm';
+          div.innerHTML = `
+            <div>
+              <span class="font-extrabold text-slate-800 text-base">${item.word}</span>
+              <span class="text-slate-500 text-xs ml-2">(${item.zh})</span>
+            </div>
+            <button onclick="speak('${item.word}')" class="btn-press bg-skybrand-100 text-skybrand-600 hover:bg-skybrand-200 p-2 rounded-xl text-xs flex items-center gap-1 font-bold">
+              <i class="fa-solid fa-volume-high"></i> 發音
+            </button>
+          `;
+          wrongList.appendChild(div);
+        });
+      } else {
+        wrongSection.classList.add('hidden');
+        retryWrongBtn.classList.add('hidden');
+      }
+
+      updateWrongCountBadge();
+    }
+
+    function showStartScreen() {
+      stopQuestionTimer();
+      stopVoiceRecognition();
+      playSound('click');
+      document.getElementById('quizScreen').classList.add('hidden');
+      document.getElementById('resultScreen').classList.add('hidden');
+      document.getElementById('startScreen').classList.remove('hidden');
+      updateWrongCountBadge();
+      updateHistoryCountBadge();
+    }
+
+    /* 
+    =================================================================
+    📜 8.5 測驗與錯題歷史紀錄管理 (含日期與時間)
+    =================================================================
+    */
+    function getTestHistory() {
+      try {
+        const data = localStorage.getItem(LOCAL_HISTORY_KEY);
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function formatDateTime(date) {
+      const pad = n => String(n).padStart(2, '0');
+      return `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+    function saveTestHistory() {
+      try {
+        const history = getTestHistory();
+        const modeNames = {
+          'listen_choice': '🎧 聽音選字',
+          'spelling': '🔤 聽音拼字',
+          'zh_en': '👁️ 看中選英',
+          'speaking': '🎤 口說唸字',
+          'mixed': '🎲 隨機混和'
+        };
+        const record = {
+          id: Date.now(),
+          dateTime: formatDateTime(new Date()),
+          rangeLabel: currentRangeLabel || '一般測驗',
+          modeLabel: modeNames[selectedQuizMode] || selectedQuizMode,
+          timeLimit: selectedTimeLimit,
+          score: score,
+          total: currentQuestions.length,
+          missedWords: roundMissedWords.map(w => ({ id: w.id, word: w.word, zh: w.zh }))
+        };
+        history.unshift(record);
+        // 最多保留最近 100 筆測驗紀錄
+        localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(history.slice(0, 100)));
+        updateHistoryCountBadge();
+      } catch (e) {}
+    }
+
+    function updateHistoryCountBadge() {
+      const badge = document.getElementById('historyCountBadge');
+      if (badge) badge.textContent = getTestHistory().length;
+    }
+
+    function openHistoryModal() {
+      playSound('click');
+      renderHistoryList();
+      document.getElementById('historyModal').classList.remove('hidden');
+    }
+
+    function closeHistoryModal() {
+      playSound('click');
+      document.getElementById('historyModal').classList.add('hidden');
+    }
+
+    function renderHistoryList() {
+      const container = document.getElementById('historyList');
+      const history = getTestHistory();
+      container.innerHTML = '';
+
+      if (history.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 text-slate-400 font-bold">
+            <div class="text-4xl mb-2">📝</div>
+            目前還沒有測驗紀錄喔！快去闖關吧！
+          </div>
+        `;
+        return;
+      }
+
+      history.forEach(rec => {
+        const accuracy = rec.total > 0 ? Math.round((rec.score / rec.total) * 100) : 0;
+        const card = document.createElement('div');
+        card.className = 'bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-2.5';
+
+        let missedHtml = '';
+        if (rec.missedWords && rec.missedWords.length > 0) {
+          missedHtml = `
+            <div class="pt-2 border-t border-slate-100">
+              <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                <div class="text-xs font-extrabold text-rose-600 flex items-center gap-1">
+                  <i class="fa-solid fa-circle-xmark"></i> 本次錯題 (${rec.missedWords.length} 題)：
+                </div>
+                <button onclick="startHistoryWrongQuiz(${rec.id})" class="btn-press bg-gradient-to-r from-amber-400 to-coral-500 hover:from-amber-500 hover:to-coral-600 text-white font-bold px-3 py-1 rounded-xl text-xs shadow-sm flex items-center gap-1">
+                  <i class="fa-solid fa-fire"></i> 錯題特訓
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                ${rec.missedWords.map(w => `
+                  <button onclick="speak('${w.word}')" class="btn-press bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1">
+                    <span class="text-[10px] text-rose-400">#${w.id}</span>
+                    <span>${w.word}</span>
+                    <span class="text-slate-500 font-medium">(${w.zh})</span>
+                    <i class="fa-solid fa-volume-high text-[10px] text-skybrand-500 ml-0.5"></i>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        } else {
+          missedHtml = `
+            <div class="pt-2 border-t border-slate-100 text-xs font-extrabold text-emerald-600 flex items-center gap-1">
+              <i class="fa-solid fa-trophy text-amber-500"></i> 太厲害了！本次全部答對無錯題！
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600">
+              <i class="fa-regular fa-calendar-days text-rose-500"></i>
+              <span>${rec.dateTime}</span>
+            </div>
+            <span class="text-xs font-black px-2.5 py-0.5 rounded-full ${accuracy === 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+              答對 ${rec.score} / ${rec.total} (${accuracy}%)
+            </span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 text-[11px] font-bold text-slate-500">
+            <span class="bg-slate-100 px-2 py-0.5 rounded-md">${rec.rangeLabel}</span>
+            <span class="bg-purple-50 text-purple-600 px-2 py-0.5 rounded-md">${rec.modeLabel}</span>
+            <span class="bg-skybrand-50 text-skybrand-600 px-2 py-0.5 rounded-md">⏱️ 限時 ${rec.timeLimit || 15}秒</span>
+          </div>
+          ${missedHtml}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 針對特定日期歷史紀錄中的錯題啟動專屬複習特訓
+    function startHistoryWrongQuiz(recordId) {
+      const history = getTestHistory();
+      const rec = history.find(item => item.id === recordId);
+      if (!rec || !rec.missedWords || rec.missedWords.length === 0) {
+        showCustomDialog('這筆紀錄沒有錯題需要特訓喔！', { icon: '🌟' });
+        return;
+      }
+
+      document.getElementById('historyModal').classList.add('hidden');
+      const shortDate = rec.dateTime ? rec.dateTime.split(' ')[0] : '歷史紀錄';
+      startQuiz(true, rec.missedWords, `🔥 特訓 (${shortDate})`);
+    }
+
+    function clearTestHistory() {
+      showCustomDialog('確定要清空所有測驗與錯題歷史紀錄嗎？', {
+        icon: '🗑️',
+        showCancel: true,
+        onConfirm: () => {
+          localStorage.removeItem(LOCAL_HISTORY_KEY);
+          updateHistoryCountBadge();
+          renderHistoryList();
+          showCustomDialog('已清空測驗歷史紀錄！', { icon: '✅' });
+        }
+      });
+    }
+
+    /* 
+    =================================================================
+    📖 9. 225 單字庫總覽視窗 (Study Bank Modal)
+    =================================================================
+    */
+    function openFlashcardModal() {
+      playSound('click');
+      document.getElementById('flashcardModal').classList.remove('hidden');
+      setModalCategory('all');
+    }
+
+    function closeFlashcardModal() {
+      playSound('click');
+      document.getElementById('flashcardModal').classList.add('hidden');
+    }
+
+    function setModalCategory(catKey) {
+      modalCategory = catKey;
+      document.querySelectorAll('.bank-cat-btn').forEach(btn => {
+        btn.classList.remove('bg-purple-500', 'text-white');
+        btn.classList.add('bg-white', 'text-slate-700', 'border', 'border-slate-200');
+      });
+
+      const activeBtn = document.getElementById(`bank-cat-${catKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+        activeBtn.classList.add('bg-purple-500', 'text-white');
+      }
+
+      filterFlashcards();
+    }
+
+    function filterFlashcards() {
+      const searchKeyword = document.getElementById('bankSearchInput').value.trim().toLowerCase();
+      let source = [...VOCAB_LIST];
+
+      // 分類篩選
+      if (modalCategory === 'r1') source = VOCAB_LIST.slice(0, 45);
+      else if (modalCategory === 'r2') source = VOCAB_LIST.slice(45, 90);
+      else if (modalCategory === 'r3') source = VOCAB_LIST.slice(90, 135);
+      else if (modalCategory === 'r4') source = VOCAB_LIST.slice(135, 180);
+      else if (modalCategory === 'r5') source = VOCAB_LIST.slice(180, 225);
+      else if (modalCategory === 'wrong') {
+        const wrongIds = getStoredWrongIds();
+        source = VOCAB_LIST.filter(item => wrongIds.includes(item.id));
+      }
+
+      // 關鍵字搜尋
+      if (searchKeyword !== '') {
+        source = source.filter(item => 
+          item.word.toLowerCase().includes(searchKeyword) || 
+          item.zh.includes(searchKeyword) ||
+          String(item.id).includes(searchKeyword)
+        );
+      }
+
+      renderFlashcardCards(source);
+    }
+
+    function renderFlashcardCards(list) {
+      const container = document.getElementById('flashcardList');
+      container.innerHTML = '';
+
+      if (list.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-slate-400 font-bold">沒有符合條件的單字喔！</div>`;
+        return;
+      }
+
+      list.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'bg-white border border-slate-200 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all flex justify-between items-center';
+        
+        let zhContent = item.zh;
+        let showZhState = showChineseToggle;
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 font-extrabold text-xs flex items-center justify-center shrink-0">
+              ${item.id}
+            </span>
+            <div>
+              <div class="text-base font-black text-slate-800">${item.word}</div>
+              <div class="card-zh-text text-xs font-bold text-skybrand-600 cursor-pointer ${showZhState ? '' : 'text-slate-400 font-normal'}">
+                ${showZhState ? item.zh : '🙈 點擊顯示中文'}
+              </div>
+            </div>
+          </div>
+
+          <button onclick="speak('${item.word}')" class="btn-press bg-skybrand-50 hover:bg-skybrand-100 text-skybrand-600 w-9 h-9 rounded-full flex items-center justify-center text-sm shadow-sm border border-skybrand-200 shrink-0">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+        `;
+
+        // 點擊卡片中文區域可個別偷看/顯示
+        const zhDiv = card.querySelector('.card-zh-text');
+        zhDiv.onclick = () => {
+          zhDiv.textContent = item.zh;
+          zhDiv.className = 'card-zh-text text-xs font-bold text-skybrand-600';
+        };
+
+        container.appendChild(card);
+      });
+    }
+
+    /* 
+    =================================================================
+    ✨ 10. 全螢幕 Confetti 粒子特效
+    =================================================================
+    */
+    let confettiParticles = [];
+    let confettiAnimId = null;
+
+    function initConfettiCanvas() {
+      const canvas = document.getElementById('confettiCanvas');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+    }
+
+    function triggerConfetti(count = 35) {
+      const canvas = document.getElementById('confettiCanvas');
+      const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#f43f5e'];
+
+      for (let i = 0; i < count; i++) {
+        confettiParticles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 3,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.7) * 14,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 12,
+          opacity: 1
+        });
+      }
+
+      if (!confettiAnimId) {
+        animateConfetti();
+      }
+    }
+
+    function animateConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      confettiParticles.forEach((p, idx) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.32;
+        p.opacity -= 0.016;
+        p.rotation += p.rotationSpeed;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+
+        if (p.opacity <= 0 || p.y > canvas.height) {
+          confettiParticles.splice(idx, 1);
+        }
+      });
+
+      if (confettiParticles.length > 0) {
+        confettiAnimId = requestAnimationFrame(animateConfetti);
+      } else {
+        confettiAnimId = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+  </script>
+</body>
+</html>
