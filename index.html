@@ -977,6 +977,11 @@
     let speechRecognition = null;
     let isListening = false;
     let currentVoiceContext = 'speaking'; // 'speaking' | 'choice' | 'spelling'
+    // 拼字語音即時寫入控制（避免等待 isFinal 過久或重複輸入）
+    let spellingCommittedLetters = {};
+    let spellingInterimTimer = null;
+    let pendingSpellingInterim = null;
+
     const VOICE_EQUIVALENTS = {
       'nineteen': ['19'],
       'twenty': ['20'],
@@ -986,34 +991,34 @@
       'neighbor': ['neighbour'],
       'quarter': ['1/4']
     };
-    // 英文字母發音同音字對照表（提升語音唸字母辨識準確率）
+    // 英文字母發音同音字對照表（擴充常見辨識字詞，大幅提升語音唸字母辨識率）
     const SPOKEN_LETTER_MAP = {
       'a': 'a', 'ay': 'a', 'eh': 'a', 'hey': 'a',
       'b': 'b', 'be': 'b', 'bee': 'b',
-      'c': 'c', 'see': 'c', 'sea': 'c',
-      'd': 'd', 'dee': 'd',
+      'c': 'c', 'see': 'c', 'sea': 'c', 'si': 'c',
+      'd': 'd', 'dee': 'd', 'di': 'd',
       'e': 'e', 'ee': 'e',
-      'f': 'f', 'ef': 'f', 'eff': 'f',
+      'f': 'f', 'ef': 'f', 'eff': 'f', 'if': 'f',
       'g': 'g', 'gee': 'g', 'ji': 'g',
-      'h': 'h', 'aitch': 'h', 'ache': 'h',
+      'h': 'h', 'aitch': 'h', 'ache': 'h', 'age': 'h', 'each': 'h', 'edge': 'h',
       'i': 'i', 'eye': 'i', 'aye': 'i',
       'j': 'j', 'jay': 'j',
-      'k': 'k', 'kay': 'k',
-      'l': 'l', 'el': 'l', 'ell': 'l',
-      'm': 'm', 'em': 'm',
-      'n': 'n', 'en': 'n',
-      'o': 'o', 'oh': 'o', 'owe': 'o',
-      'p': 'p', 'pea': 'p', 'pee': 'p',
+      'k': 'k', 'kay': 'k', 'okay': 'k', 'ok': 'k',
+      'l': 'l', 'el': 'l', 'ell': 'l', 'al': 'l',
+      'm': 'm', 'em': 'm', 'am': 'm',
+      'n': 'n', 'en': 'n', 'in': 'n', 'an': 'n',
+      'o': 'o', 'oh': 'o', 'owe': 'o', '0': 'o',
+      'p': 'p', 'pea': 'p', 'pee': 'p', 'pi': 'p',
       'q': 'q', 'cue': 'q', 'queue': 'q', 'kew': 'q',
-      'r': 'r', 'are': 'r', 'ar': 'r',
-      's': 's', 'es': 's', 'ess': 's',
-      't': 't', 'tea': 't', 'tee': 't',
+      'r': 'r', 'are': 'r', 'ar': 'r', 'our': 'r',
+      's': 's', 'es': 's', 'ess': 's', 'as': 's', 'is': 's',
+      't': 't', 'tea': 't', 'tee': 't', 'ti': 't',
       'u': 'u', 'you': 'u', 'yew': 'u',
-      'v': 'v', 'vee': 'v',
+      'v': 'v', 'vee': 'v', 'vi': 'v',
       'w': 'w', 'doubleu': 'w', 'doubleyou': 'w',
-      'x': 'x', 'ex': 'x',
+      'x': 'x', 'ex': 'x', 'axe': 'x',
       'y': 'y', 'why': 'y', 'wye': 'y',
-      'z': 'z', 'zee': 'z', 'zed': 'z'
+      'z': 'z', 'zee': 'z', 'zed': 'z', 'zi': 'z'
     };
 
     // 單字表 Modal 狀態
@@ -1993,7 +1998,6 @@
       if (isAnswered) return;
 
       // 找出第一個尚未填對的位置
-      const currentInput = spellingUserLetters.map(t => t.char).join('');
       let firstWrongIndex = -1;
 
       for (let i = 0; i < spellingTargetWord.length; i++) {
@@ -2094,8 +2098,24 @@
       });
     }
 
-    // 將語音辨識結果解析為英文字母陣列（支援單唸字母、同音字及 "double p" 唸法）
-    function parseSpokenLetters(rawText) {
+    // 檢查某字串的所有字母是否都存在於目前可用的字母方塊中（含同一句已送出的字母）
+    function canFormFromAvailableTiles(str, extraAvailable = []) {
+      const counts = {};
+      currentTileObjects.forEach(t => {
+        if (!t.used) counts[t.char] = (counts[t.char] || 0) + 1;
+      });
+      extraAvailable.forEach(ch => {
+        counts[ch] = (counts[ch] || 0) + 1;
+      });
+      for (const ch of str) {
+        if (!counts[ch] || counts[ch] <= 0) return false;
+        counts[ch]--;
+      }
+      return true;
+    }
+
+    // 將語音辨識結果解析為英文字母陣列（支援單唸字母、同音字、連唸合併成字、以及 "double p" 唸法）
+    function parseSpokenLetters(rawText, extraAvailable = []) {
       const text = rawText.toLowerCase()
         .replace(/[-.,!?;:'"]/g, ' ')
         .replace(/\bdouble\s+(u|you)\b/g, ' w ')
@@ -2116,67 +2136,114 @@
             continue;
           }
         }
+        // 1. 優先比對單字母與常見同音字
         if (SPOKEN_LETTER_MAP[tok]) {
           letters.push(SPOKEN_LETTER_MAP[tok]);
-        } else if (/^[a-z]{2,4}$/.test(tok) && tok.split('').every(ch => currentTileObjects.some(t => !t.used && t.char === ch))) {
-          // 若語音辨識將連唸的字母黏在一起（例如 "pp"、"ap"），拆分為個別字母
+        }
+        // 2. 若語音辨識將連唸的字母自動合併成整串英文（不限字數，例如 "apple"、"ghost"、"pp"）
+        else if (/^[a-z]{2,}$/.test(tok) && (tok === spellingTargetWord || canFormFromAvailableTiles(tok, extraAvailable))) {
           letters.push(...tok.split(''));
         }
       }
       return letters;
     }
 
-    // 將解析出的英文字母依序填入拼字方塊中
-    function applySpokenSpellingLetters(transcripts) {
-      let bestLetters = [];
+    // 清除拼字語音的暫存延遲計時器
+    function clearSpellingInterimTimer() {
+      if (spellingInterimTimer) {
+        clearTimeout(spellingInterimTimer);
+        spellingInterimTimer = null;
+      }
+    }
+
+    // 將解析出的英文字母依序填入拼字方塊中（支援同一句分段即時填入且不重複）
+    function applySpokenSpellingLetters(transcripts, resultIndex = -1) {
+      if (isAnswered) return;
+
+      const alreadyCommitted = (resultIndex >= 0 && spellingCommittedLetters[resultIndex])
+        ? spellingCommittedLetters[resultIndex]
+        : [];
+
+      let bestNewLetters = [];
+      let bestFullLetters = [];
       let bestScore = -1;
+
+      const expectedStartIdx = spellingUserLetters.length;
 
       // 從多個候選辨識結果中挑選最符合目前可用字母方塊的一組
       transcripts.forEach(raw => {
-        const parsed = parseSpokenLetters(raw);
+        const parsed = parseSpokenLetters(raw, alreadyCommitted);
         if (parsed.length === 0) return;
+
+        // 扣掉同一句之前已經填入過的開頭字母，避免重複填字
+        let prefixMatch = 0;
+        while (
+          prefixMatch < alreadyCommitted.length &&
+          prefixMatch < parsed.length &&
+          alreadyCommitted[prefixMatch] === parsed[prefixMatch]
+        ) {
+          prefixMatch++;
+        }
+        const newPart = parsed.slice(prefixMatch);
+        if (newPart.length === 0) return;
+
         const availableCount = {};
         currentTileObjects.forEach(t => {
           if (!t.used) availableCount[t.char] = (availableCount[t.char] || 0) + 1;
         });
-        let matched = 0;
-        parsed.forEach(ch => {
+
+        let scoreVal = 0;
+        newPart.forEach((ch, offset) => {
           if (availableCount[ch] > 0) {
-            matched++;
+            scoreVal += 10;
+            // 若剛好符合目標單字的下一個字母，給予額外加分（解決同音字歧義）
+            if (spellingTargetWord[expectedStartIdx + offset] === ch) {
+              scoreVal += 5;
+            }
             availableCount[ch]--;
           }
         });
-        if (matched > bestScore) {
-          bestScore = matched;
-          bestLetters = parsed;
+
+        if (scoreVal > bestScore) {
+          bestScore = scoreVal;
+          bestNewLetters = newPart;
+          bestFullLetters = parsed;
         }
       });
 
       const hint = document.getElementById('spellingVoiceHint');
-      if (bestLetters.length === 0) {
-        if (hint) hint.textContent = `聽到「${transcripts[0] || ''}」，請一個一個唸出英文字母喔！`;
+      if (bestNewLetters.length === 0) {
+        if (alreadyCommitted.length === 0 && hint) {
+          hint.textContent = `聽到「${transcripts[0] || ''}」，請再清楚唸出英文字母喔！`;
+        }
         return;
       }
 
       const entered = [];
       const missing = [];
-      for (const ch of bestLetters) {
+      for (const ch of bestNewLetters) {
         if (isAnswered || spellingUserLetters.length >= spellingTargetWord.length) break;
         const unusedTile = currentTileObjects.find(t => !t.used && t.char === ch);
         if (unusedTile) {
           selectSpellingTile(unusedTile);
-          entered.push(ch.toUpperCase());
+          entered.push(ch);
         } else {
           missing.push(ch.toUpperCase());
         }
       }
 
+      // 記錄此句已成功送出的字母，避免 isFinal 重複觸發
+      if (resultIndex >= 0 && entered.length > 0) {
+        spellingCommittedLetters[resultIndex] = [...alreadyCommitted, ...entered];
+      }
+
       if (hint && !isAnswered) {
-        if (entered.length > 0 && missing.length === 0) {
-          hint.textContent = `✅ 已填入字母：${entered.join(' ')}`;
-        } else if (entered.length > 0 && missing.length > 0) {
-          hint.textContent = `✅ 已填入 ${entered.join(' ')}（方塊中無 ${missing.join(' ')}）`;
-        } else {
+        const enteredUpper = entered.map(c => c.toUpperCase());
+        if (enteredUpper.length > 0 && missing.length === 0) {
+          hint.textContent = `✅ 已填入字母：${enteredUpper.join(' ')}`;
+        } else if (enteredUpper.length > 0 && missing.length > 0) {
+          hint.textContent = `✅ 已填入 ${enteredUpper.join(' ')}（方塊中無 ${missing.join(' ')}）`;
+        } else if (missing.length > 0) {
           hint.textContent = `⚠️ 聽到「${missing.join(' ')}」，但下方字母方塊沒有這個字母喔！`;
         }
       }
@@ -2191,11 +2258,22 @@
       }
 
       if (isListening) {
+        // 若使用者手動停止收音時，還有剛唸完尚未送出的暫存字母，先幫他填入
+        if (currentVoiceContext === 'spelling' && pendingSpellingInterim) {
+          const { index, transcripts } = pendingSpellingInterim;
+          pendingSpellingInterim = null;
+          clearSpellingInterimTimer();
+          applySpokenSpellingLetters(transcripts, index);
+        }
         stopVoiceRecognition();
         return;
       }
 
       currentVoiceContext = context;
+      spellingCommittedLetters = {};
+      pendingSpellingInterim = null;
+      clearSpellingInterimTimer();
+
       // 啟動收音前先停止朗讀，避免麥克風收到系統聲音
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
@@ -2227,10 +2305,23 @@
               for (let j = 0; j < res.length; j++) {
                 transcripts.push(res[j].transcript);
               }
+
               if (res.isFinal) {
-                applySpokenSpellingLetters(transcripts);
-              } else if (hint) {
-                hint.textContent = `聆聽中：「${transcripts[0] || ''}」...`;
+                clearSpellingInterimTimer();
+                pendingSpellingInterim = null;
+                applySpokenSpellingLetters(transcripts, i);
+              } else {
+                if (hint) hint.textContent = `聆聽中：「${transcripts[0] || ''}」...`;
+                // 暫存即時結果：若手機/瀏覽器停頓 0.75 秒還沒觸發 isFinal，自動幫玩家填入答案格！
+                pendingSpellingInterim = { index: i, transcripts };
+                clearSpellingInterimTimer();
+                spellingInterimTimer = setTimeout(() => {
+                  if (!isAnswered && pendingSpellingInterim) {
+                    const pending = pendingSpellingInterim;
+                    pendingSpellingInterim = null;
+                    applySpokenSpellingLetters(pending.transcripts, pending.index);
+                  }
+                }, 750);
               }
             }
             return;
@@ -2290,6 +2381,7 @@
 
         speechRecognition.onerror = (event) => {
           isListening = false;
+          clearSpellingInterimTimer();
           let errMsg = '語音辨識發生錯誤，請再試一次';
           if (event.error === 'not-allowed') {
             errMsg = '請允許瀏覽器使用麥克風權限才能語音答題喔！';
@@ -2302,6 +2394,13 @@
         };
 
         speechRecognition.onend = () => {
+          // 若收音自然結束但還有未填入的暫存字母，自動補填進去
+          if (currentVoiceContext === 'spelling' && !isAnswered && pendingSpellingInterim) {
+            const pending = pendingSpellingInterim;
+            pendingSpellingInterim = null;
+            clearSpellingInterimTimer();
+            applySpokenSpellingLetters(pending.transcripts, pending.index);
+          }
           isListening = false;
           if (!isAnswered) {
             updateVoiceUI(false);
@@ -2317,6 +2416,8 @@
 
     function stopVoiceRecognition() {
       isListening = false;
+      clearSpellingInterimTimer();
+      pendingSpellingInterim = null;
       if (speechRecognition) {
         try {
           speechRecognition.onresult = null;
@@ -2803,7 +2904,6 @@
         const card = document.createElement('div');
         card.className = 'bg-white border border-slate-200 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all flex justify-between items-center';
         
-        let zhContent = item.zh;
         let showZhState = showChineseToggle;
 
         card.innerHTML = `
